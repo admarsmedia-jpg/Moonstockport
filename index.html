@@ -502,22 +502,22 @@ const CAP_DEFAULT = 600000;
 const TGT = 10000;
 
 const ASSETS_DEF = [
-  {name:'JEPI',  desc:'Covered Call ETF',  tax:30, color:'#6366f1', freq:'รายเดือน'},
-  {name:'SCHD',  desc:'Dividend ETF',       tax:15, color:'#10b981', freq:'รายไตรมาส'},
-  {name:'VNQ',   desc:'US REIT ETF',        tax:30, color:'#f59e0b', freq:'รายไตรมาส'},
-  {name:'VOO',   desc:'S&P 500 ETF',        tax:15, color:'#38bdf8', freq:'รายไตรมาส'},
-  {name:'KO',    desc:'High-Div Stock',     tax:15, color:'#f87171', freq:'รายไตรมาส'},
+  {name:'QQQI',  desc:'Covered Call ETF',  tax:30, color:'#6366f1', freq:'รายเดือน'},
+  {name:'NVDA',  desc:'Growth Stock',       tax:15, color:'#10b981', freq:'รายไตรมาส'},
+  {name:'AMD',   desc:'Growth Stock',       tax:15, color:'#f59e0b', freq:'—'},
+  {name:'MU',    desc:'Growth Stock',       tax:15, color:'#38bdf8', freq:'รายไตรมาส'},
+  {name:'GOOGL', desc:'Growth Stock',       tax:15, color:'#f87171', freq:'รายไตรมาส'},
 ];
 const PRESETS = [
-  {name:'ปลอดภัย', label:'Income Safe',    risk:'low', roi:'~2.5% net',
-   desc:'ETF ใหญ่ ความเสี่ยงต่ำ ปันผลสม่ำเสมอ',
-   alloc:[0,50,0,40,10], yields:[9,3.5,5,1.5,3.1]},
-  {name:'สมดุล',   label:'Balanced Income', risk:'mid', roi:'~5.0% net',
-   desc:'JEPI + SCHD + REIT ผสมให้ yield สูงขึ้น',
-   alloc:[35,30,20,15,0], yields:[9,3.5,5,1.5,0]},
-  {name:'เชิงรุก', label:'Max Yield',       risk:'hi',  roi:'~6.3% net',
-   desc:'เน้น JEPI สูง Yield สูงสุดแต่ค่าภาษี 30%',
-   alloc:[60,20,20,0,0],  yields:[9,3.5,5,0,0]},
+  {name:'Conservative', label:'Income Focus',   risk:'low', roi:'~4.7% net',
+   desc:'QQQI เน้นรายได้ปันผลรายเดือน',
+   alloc:[70,10,0,10,10], yields:[9.5,0.03,0,0.5,0.5]},
+  {name:'Balanced',     label:'Growth + Income', risk:'mid', roi:'~5.0% net',
+   desc:'QQQI + Tech Growth ผสม',
+   alloc:[50,10,10,20,10], yields:[9.5,0.03,0,0.5,0.5]},
+  {name:'Aggressive',   label:'Max Growth',      risk:'hi',  roi:'~4.7% net',
+   desc:'Tech Growth สูง QQQI เป็น income base',
+   alloc:[50,15,15,10,10], yields:[9.5,0.03,0,0.5,0.5]},
 ];
 const TAX_INFO = [
   {name:'Covered Call ETF',  ex:'JEPI, QYLD',    yMin:8,  yMax:12, tax:30, color:'#6366f1'},
