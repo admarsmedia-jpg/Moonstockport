@@ -47,8 +47,8 @@
         style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:4px 12px;border-radius:8px;font-size:12px;cursor:pointer">
         ↻ รีเฟรช
       </button>
-      <div style="background:#1e293b;border-radius:8px;padding:.4rem .75rem;font-size:13px;text-align:center">
-        <div style="color:#64748b;font-size:10px">ทุนเริ่มต้น</div>
+      <div style="background:#1e293b;border-radius:8px;padding:.4rem .75rem;font-size:13px;text-align:center;cursor:pointer" onclick="editCapital()" title="คลิกเพื่อแก้ไข">
+        <div style="color:#64748b;font-size:10px">ทุนเริ่มต้น ✏️</div>
         <div style="font-weight:600" id="hdr-capital">฿600,000</div>
       </div>
       <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:8px;padding:.4rem .75rem;font-size:13px;text-align:center">
@@ -119,6 +119,45 @@
           <span style="font-size:12px;color:#64748b">รวม: <span id="total-pct" style="font-weight:600;color:#6366f1">100%</span></span>
         </div>
         <div id="asset-rows"></div>
+        <!-- ADD STOCK FORM -->
+        <div style="margin-top:1rem;border-top:1px solid #1e293b;padding-top:1rem">
+          <div id="add-form" style="display:none;margin-bottom:.75rem">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:6px">
+              <div>
+                <div style="font-size:10px;color:#64748b;margin-bottom:3px">Ticker</div>
+                <input id="new-ticker" type="text" placeholder="เช่น JEPI" maxlength="8"
+                  style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none;text-transform:uppercase">
+              </div>
+              <div>
+                <div style="font-size:10px;color:#64748b;margin-bottom:3px">Alloc %</div>
+                <input id="new-alloc" type="number" placeholder="10" min="0" max="100" step="1"
+                  style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
+              </div>
+              <div>
+                <div style="font-size:10px;color:#64748b;margin-bottom:3px">Yield %/ปี</div>
+                <input id="new-yield" type="number" placeholder="0" min="0" max="50" step="0.1"
+                  style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
+              </div>
+              <div>
+                <div style="font-size:10px;color:#64748b;margin-bottom:3px">ภาษี %</div>
+                <select id="new-tax" style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
+                  <option value="15">15%</option>
+                  <option value="30">30%</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button onclick="confirmAdd()" style="flex:1;background:#6366f1;color:white;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer;font-weight:500">เพิ่ม</button>
+              <button onclick="toggleAddForm(false)" style="background:#1e293b;color:#94a3b8;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">ยกเลิก</button>
+            </div>
+          </div>
+          <button onclick="toggleAddForm(true)" id="btn-add-stock"
+            style="width:100%;background:#1e293b;border:1px dashed #334155;color:#64748b;border-radius:8px;padding:7px;font-size:12px;cursor:pointer;transition:all .2s"
+            onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'"
+            onmouseout="this.style.borderColor='#334155';this.style.color='#64748b'">
+            + เพิ่มหุ้น / ETF
+          </button>
+        </div>
       </div>
 
       <!-- CHART + METRICS -->
@@ -148,16 +187,45 @@
       </div>
     </div>
 
-    <!-- FX RATE -->
+    <!-- FX RATE + CAPITAL -->
     <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-      <span style="font-size:13px;color:#64748b;white-space:nowrap">อัตราแลกเปลี่ยน USD/THB:</span>
       <div style="display:flex;align-items:center;gap:6px">
-        <input type="number" id="fx-rate" value="35" step="0.5" min="20" max="50" oninput="update()"
-          style="width:72px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:13px;text-align:center;outline:none">
-        <span style="font-size:13px;color:#64748b">บาท/ดอลลาร์</span>
+        <span style="font-size:13px;color:#64748b;white-space:nowrap">ทุนเริ่มต้น (THB):</span>
+        <input type="number" id="capital-input" value="600000" step="10000" min="10000" oninput="onCapitalChange()"
+          style="width:110px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:13px;text-align:right;outline:none">
       </div>
-      <span style="font-size:12px;color:#64748b">| ทุน <span id="fx-usd" style="color:#94a3b8;font-weight:500">$17,143</span> USD</span>
-      <span style="font-size:11px;color:#475569">* ความเสี่ยงค่าเงินส่งผลต่อมูลค่าพอร์ตเมื่อแปลงกลับเป็น THB</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:13px;color:#64748b;white-space:nowrap">USD/THB:</span>
+        <input type="number" id="fx-rate" value="35" step="0.5" min="20" max="50" oninput="update()"
+          style="width:65px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:13px;text-align:center;outline:none">
+      </div>
+      <span style="font-size:12px;color:#64748b">= <span id="fx-usd" style="color:#94a3b8;font-weight:500">$17,143</span> USD</span>
+    </div>
+
+    <!-- FINNHUB API -->
+    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem 1.25rem;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:500">📡 Finnhub API</span>
+          <span style="font-size:11px;color:#64748b">(ราคาหุ้น US real-time ฟรี)</span>
+          <span id="fh-badge" style="display:none;font-size:11px;background:#052e16;color:#34d399;border:1px solid #166534;padding:2px 8px;border-radius:20px">● Connected</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <input id="fh-key" type="text" placeholder="API Key จาก finnhub.io (ฟรี)"
+            style="width:200px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 10px;font-size:12px;outline:none">
+          <button onclick="fetchFinnhub()" id="fh-btn" style="background:#6366f1;color:white;border:none;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-weight:500">ดึงราคา</button>
+          <button onclick="toggleAutoRefresh()" id="fh-auto-btn" style="background:#1e293b;color:#64748b;border:1px solid #334155;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer">⏱ Auto</button>
+          <button onclick="toggleFhHelp()" style="background:#1e293b;color:#64748b;border:1px solid #334155;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer">วิธีรับ Key</button>
+        </div>
+        <div style="font-size:11px;color:#475569;margin-top:4px" id="fh-updated"></div>
+      </div>
+      <div id="fh-help" style="display:none;margin-top:.75rem;background:#1e293b;border-radius:8px;padding:.75rem;font-size:12px;color:#94a3b8;line-height:1.8">
+        1. ไปที่ <strong style="color:#c7d2fe">finnhub.io</strong> → กด <strong>Get free API key</strong><br>
+        2. สมัครบัญชีฟรี → ได้ API Key ทันที<br>
+        3. วาง Key ในช่องด้านบน → กด <strong>ดึงราคา</strong><br>
+        <span style="color:#475569">* ฟรี 60 requests/นาที | ราคา delay ~15 วินาที</span>
+      </div>
+      <div id="fh-prices" style="display:none;margin-top:.75rem;display:none"></div>
     </div>
 
     <!-- GAP ANALYSIS -->
@@ -501,6 +569,18 @@
 const CAP_DEFAULT = 600000;
 const TGT = 10000;
 
+// DPS lookup table (USD/year) — อัปเดตปีละครั้ง
+const DPS_TABLE = {
+  QQQI:7.60, JEPI:4.69, QYLD:2.16, JEPQ:4.20,
+  SCHD:1.05, VYM:4.18, DVY:3.80, HDV:4.10,
+  VNQ:3.49,  O:3.24,   STAG:1.47, REIT:1.20,
+  VOO:7.13,  SPY:6.90, QQQ:2.81,  QQQM:1.27,
+  KO:2.12,   JNJ:5.20, PG:4.03,   T:1.11,
+  NVDA:0.04, AMD:0,    MU:0.46,   GOOGL:0.80,
+  MSFT:3.32, AAPL:1.00,TSLA:0,    META:2.00,
+  AMZN:0,    NFLX:0,   INTC:0.50, IBM:6.68,
+};
+
 const ASSETS_DEF = [
   {name:'QQQI',  desc:'Covered Call ETF',  tax:30, color:'#6366f1', freq:'รายเดือน'},
   {name:'NVDA',  desc:'Growth Stock',       tax:15, color:'#10b981', freq:'รายไตรมาส'},
@@ -537,6 +617,7 @@ let S = {
 };
 let chartInst = null;
 let apiUrl = localStorage.getItem('us_portfolio_api_url') || '';
+let fhInterval = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   if (apiUrl) {
@@ -545,6 +626,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('api-url-input2').value = apiUrl;
     fetchSheetData();
   }
+  const savedKey=localStorage.getItem('fh_key');
+  if(savedKey) g('fh-key').value=savedKey;
   renderTaxTable();
   renderPresets();
   renderRows();
@@ -634,22 +717,28 @@ function selectPreset(i) {
 
 // ===== ROWS =====
 function renderRows() {
+  const colors=['#6366f1','#10b981','#f59e0b','#38bdf8','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
   document.getElementById('asset-rows').innerHTML = S.assets.map((a,i)=>`
     <div style="margin-bottom:${i<S.assets.length-1?'1rem':'0'}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <div style="display:flex;align-items:center;gap:7px">
-          <span style="width:10px;height:10px;border-radius:50%;background:${a.color};display:inline-block;flex-shrink:0"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:${a.color||colors[i%colors.length]};display:inline-block;flex-shrink:0"></span>
           <span style="font-size:13px;font-weight:600">${a.name}</span>
           <span style="font-size:10px;color:#64748b">${a.desc||''} · ภาษี ${a.tax}%</span>
         </div>
-        <div style="text-align:right">
-          <span style="font-size:13px;font-weight:600" id="ap-${i}">${S.alloc[i]}%</span>
-          <span style="font-size:11px;color:#64748b;margin-left:5px" id="av-${i}">฿${fmt(S.capital*S.alloc[i]/100)}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="text-align:right">
+            <span style="font-size:13px;font-weight:600" id="ap-${i}">${S.alloc[i]}%</span>
+            <span style="font-size:11px;color:#64748b;margin-left:5px" id="av-${i}">฿${fmt(S.capital*S.alloc[i]/100)}</span>
+          </div>
+          <button onclick="removeAsset(${i})" title="ลบ"
+            style="background:none;border:none;color:#475569;font-size:14px;cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px"
+            onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#475569'">✕</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <input type="range" min="0" max="100" step="1" value="${S.alloc[i]}" id="sl-${i}"
-          style="flex:1;accent-color:${a.color}" oninput="onSlide(${i},+this.value)">
+          style="flex:1;accent-color:${a.color||colors[i%colors.length]}" oninput="onSlide(${i},+this.value)">
         <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
           <input type="number" min="0" max="50" step="0.5" value="${S.yields[i]}" id="yl-${i}"
             oninput="onYield(${i},+this.value)"
@@ -658,6 +747,116 @@ function renderRows() {
         </div>
       </div>
     </div>`).join('');
+}
+function removeAsset(i) {
+  if(S.assets.length<=1) return;
+  const removed=S.alloc[i];
+  S.assets.splice(i,1); S.alloc.splice(i,1); S.yields.splice(i,1);
+  const rem=S.alloc.reduce((s,v)=>s+v,0);
+  if(rem>0 && removed>0) {
+    const extra=100-rem;
+    const biggest=S.alloc.indexOf(Math.max(...S.alloc));
+    S.alloc[biggest]=Math.max(0,S.alloc[biggest]+extra);
+  }
+  S.preset=-1; renderPresets(); renderRows(); update();
+}
+function toggleAddForm(show) {
+  const form=document.getElementById('add-form');
+  const btn=document.getElementById('btn-add-stock');
+  form.style.display=show?'block':'none';
+  btn.style.display=show?'none':'block';
+  if(show){ document.getElementById('new-ticker').value=''; document.getElementById('new-yield').value=''; }
+}
+function confirmAdd() {
+  const colors=['#6366f1','#10b981','#f59e0b','#38bdf8','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
+  const ticker=(document.getElementById('new-ticker').value||'').trim().toUpperCase();
+  const yld=parseFloat(document.getElementById('new-yield').value)||0;
+  const tax=parseInt(document.getElementById('new-tax').value)||15;
+  let newAlloc=parseInt(document.getElementById('new-alloc').value)||0;
+  if(!ticker) return;
+  // Reduce existing allocs proportionally to make room
+  if(newAlloc>0) {
+    const total=S.alloc.reduce((s,v)=>s+v,0);
+    const excess=Math.min(newAlloc, total);
+    if(excess>0 && total>0) S.alloc=S.alloc.map(v=>Math.round(v*(total-excess)/total));
+    const actualTotal=S.alloc.reduce((s,v)=>s+v,0);
+    newAlloc=100-actualTotal;
+  }
+  const color=colors[S.assets.length%colors.length];
+  const freq=tax===30?'รายเดือน':'รายไตรมาส';
+  S.assets.push({name:ticker,desc:'',tax,color,freq});
+  S.alloc.push(Math.max(0,newAlloc)); S.yields.push(yld);
+  S.preset=-1; toggleAddForm(false); renderPresets(); renderRows(); update();
+}
+function editCapital() {
+  const v=parseInt(document.getElementById('capital-input').value)||S.capital;
+  const input=document.getElementById('capital-input');
+  if(input) { S.capital=v; setText('hdr-capital','฿'+fmt(v)); update(); }
+}
+function onCapitalChange() {
+  const v=parseInt(document.getElementById('capital-input').value)||0;
+  if(v>=1000) { S.capital=v; setText('hdr-capital','฿'+fmt(v)); update(); }
+}
+function toggleFhHelp() {
+  const el=g('fh-help'); if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+async function fetchFinnhub() {
+  const key=(g('fh-key').value||'').trim();
+  if(!key){alert('กรุณาใส่ Finnhub API Key ก่อน');return;}
+  localStorage.setItem('fh_key',key);
+  const btn=g('fh-btn'); btn.textContent='กำลังโหลด...'; btn.disabled=true;
+  const tickers=[...new Set(S.assets.map(a=>a.name))];
+  const priceMap={};
+  try {
+    for(const t of tickers){
+      const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${t}&token=${key}`);
+      const d=await r.json();
+      if(d.c>0) priceMap[t]={price:d.c,change:d.dp??0};
+    }
+    if(Object.keys(priceMap).length){
+      // Update yields from DPS/Price
+      S.assets.forEach((a,i)=>{
+        const pd=priceMap[a.name];
+        if(pd && DPS_TABLE[a.name]!==undefined){
+          const dps=DPS_TABLE[a.name];
+          const newYield=pd.price>0 ? +(dps/pd.price*100).toFixed(2) : S.yields[i];
+          S.yields[i]=newYield;
+          const el=g('yl-'+i); if(el) el.value=newYield;
+        }
+      });
+      update();
+      // Show price badges
+      g('fh-badge').style.display='inline';
+      const pricesEl=g('fh-prices');
+      pricesEl.style.display='grid';
+      pricesEl.style.gridTemplateColumns='repeat(auto-fit,minmax(110px,1fr))';
+      pricesEl.style.gap='6px';
+      pricesEl.style.marginTop='.75rem';
+      pricesEl.innerHTML=Object.entries(priceMap).map(([t,v])=>`
+        <div style="background:#1e293b;border-radius:8px;padding:.5rem .75rem;text-align:center">
+          <div style="font-size:11px;color:#64748b;margin-bottom:1px">${t}</div>
+          <div style="font-weight:700;font-size:15px">$${v.price.toFixed(2)}</div>
+          <div style="font-size:11px;color:${v.change>=0?'#10b981':'#f87171'}">${v.change>=0?'+':''}${v.change.toFixed(2)}%</div>
+          ${DPS_TABLE[t]!==undefined?`<div style="font-size:10px;color:#475569">yield ${v.price>0?(DPS_TABLE[t]/v.price*100).toFixed(1):0}%</div>`:''}
+        </div>`).join('');
+      const now=new Date().toLocaleTimeString('th-TH');
+      const upd=g('fh-updated'); if(upd) upd.textContent='อัปเดตล่าสุด: '+now;
+    }
+  } catch(e){ const upd=g('fh-updated'); if(upd) upd.textContent='Error: '+e.message; }
+  finally{ btn.textContent='ดึงราคา'; btn.disabled=false; }
+}
+function toggleAutoRefresh() {
+  const btn=g('fh-auto-btn');
+  if(fhInterval){
+    clearInterval(fhInterval); fhInterval=null;
+    btn.style.background='#1e293b'; btn.style.color='#64748b'; btn.style.borderColor='#334155';
+    btn.textContent='⏱ Auto';
+  } else {
+    fetchFinnhub();
+    fhInterval=setInterval(fetchFinnhub,5*60*1000);
+    btn.style.background='#052e16'; btn.style.color='#34d399'; btn.style.borderColor='#166534';
+    btn.textContent='⏱ Auto ON (5m)';
+  }
 }
 function updateRow(i) {
   const v=S.alloc[i];
