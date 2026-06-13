@@ -3,284 +3,290 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>US Stock Portfolio Planner</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>Moon Stock Portfolio</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *{font-family:'IBM Plex Sans Thai','Poppins',sans-serif;box-sizing:border-box}
-  body{background:#020617;color:#f1f5f9;min-height:100vh}
-  input[type=range]{-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;outline:none;cursor:pointer;width:100%}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;cursor:pointer;transition:transform .15s}
-  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
-  .strategy-card{transition:all .25s ease;border:1px solid #1e293b;cursor:pointer}
-  .strategy-card:hover{border-color:#334155;transform:translateY(-2px)}
-  .strategy-card.sel{border-color:#6366f1;box-shadow:0 0 0 1px #6366f1,0 4px 20px rgba(99,102,241,.2)}
-  .tab-btn{padding:.5rem 1rem;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;transition:all .2s}
-  .tab-btn.active{color:#6366f1;border-bottom-color:#6366f1}
-  .progress-track{background:#1e293b;border-radius:20px;height:8px;overflow:hidden}
-  .progress-fill{height:100%;border-radius:20px;transition:width .5s ease,background .3s}
-  .tab-panel{display:none}.tab-panel.show{display:block}
-  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
-  .live-dot{width:8px;height:8px;border-radius:50%;background:#6366f1;display:inline-block;animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-  pre{white-space:pre-wrap;word-break:break-all}
-  .flag{font-size:16px}
+*{font-family:'IBM Plex Sans Thai','Poppins',sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{background:#020617;color:#f1f5f9;min-height:100vh}
+input[type=range]{-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;outline:none;cursor:pointer;width:100%}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.card{background:#0f172a;border:1px solid #1e293b;border-radius:14px;padding:1.25rem}
+.tab-btn{padding:.5rem 1.1rem;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab-btn.active{color:#6366f1;border-bottom-color:#6366f1}
+.tab-panel{display:none}.tab-panel.show{display:block}
+.preset-card{transition:all .2s;border:1px solid #1e293b;border-radius:12px;padding:.875rem;cursor:pointer;background:#0f172a}
+.preset-card:hover{border-color:#334155;transform:translateY(-1px)}
+.preset-card.sel{border-color:#6366f1;box-shadow:0 0 0 1px #6366f1,0 4px 16px rgba(99,102,241,.15)}
+.inp{background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+.inp:focus{border-color:#6366f1}
+.btn{border:none;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;font-weight:500;transition:all .15s}
+.btn-primary{background:#6366f1;color:#fff}.btn-primary:hover{background:#4f46e5}
+.btn-ghost{background:#1e293b;color:#94a3b8;border:1px solid #334155}.btn-ghost:hover{border-color:#6366f1;color:#6366f1}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.badge-green{background:#052e16;color:#34d399;border:1px solid #166534}
+.badge-blue{background:#1e1b4b;color:#818cf8;border:1px solid #3730a3}
+.badge-red{background:#1c0a0a;color:#f87171;border:1px solid #7f1d1d}
+.badge-yellow{background:#1c1400;color:#fbbf24;border:1px solid #92400e}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:2px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}.hide-sm{display:none!important}.main-grid{grid-template-columns:1fr!important}}
+.divider{border:none;border-top:1px solid #1e293b;margin:.75rem 0}
+select.inp option{background:#1e293b}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <header style="background:#0f172a;border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:50">
-  <div style="max-width:980px;margin:0 auto;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-    <div style="display:flex;align-items:center;gap:.625rem">
-      <div style="width:32px;height:32px;background:#6366f1;border-radius:8px;display:flex;align-items:center;justify-content:center">
-        <span class="flag">🇺🇸</span>
+  <div style="max-width:1040px;margin:0 auto;padding:.75rem 1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🌙</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;letter-spacing:-.01em">Moon Stock Portfolio</div>
+          <div style="font-size:11px;color:#475569">US Stock Passive Income Planner</div>
+        </div>
       </div>
-      <span style="font-size:16px;font-weight:600">US Stock Portfolio Planner</span>
-      <span id="live-badge" style="display:none;font-size:11px;background:#1e1b4b;color:#818cf8;border:1px solid #3730a3;padding:2px 8px;border-radius:20px;align-items:center;gap:4px">
-        <span class="live-dot"></span> Live Data
-      </span>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button onclick="fetchSheetData()" id="refresh-btn"
-        style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:4px 12px;border-radius:8px;font-size:12px;cursor:pointer">
-        ↻ รีเฟรช
-      </button>
-      <div style="background:#1e293b;border-radius:8px;padding:.4rem .75rem;font-size:13px;text-align:center;cursor:pointer" onclick="editCapital()" title="คลิกเพื่อแก้ไข">
-        <div style="color:#64748b;font-size:10px">ทุนเริ่มต้น ✏️</div>
-        <div style="font-weight:600" id="hdr-capital">฿600,000</div>
-      </div>
-      <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:8px;padding:.4rem .75rem;font-size:13px;text-align:center">
-        <div style="color:#818cf8;font-size:10px">เป้า/เดือน</div>
-        <div style="font-weight:600;color:#6366f1">฿10,000</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="background:#1e293b;border-radius:10px;padding:.4rem .875rem;display:flex;align-items:center;gap:.5rem">
+          <span style="font-size:10px;color:#64748b">ทุน</span>
+          <span style="font-size:13px;font-weight:600" id="hdr-capital">฿600,000</span>
+        </div>
+        <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:10px;padding:.4rem .875rem;display:flex;align-items:center;gap:.5rem">
+          <span style="font-size:10px;color:#818cf8">เป้า/เดือน</span>
+          <span style="font-size:13px;font-weight:600;color:#6366f1" id="hdr-target">฿10,000</span>
+        </div>
+        <span id="fh-badge" style="display:none" class="badge badge-green"><span class="dot" style="background:#10b981"></span>Live Price</span>
       </div>
     </div>
   </div>
 </header>
 
-<!-- W-8BEN ALERT -->
-<div style="max-width:980px;margin:.75rem auto 0;padding:0 1rem">
-  <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:10px;padding:.75rem 1.25rem;display:flex;gap:.75rem;align-items:center">
-    <span style="font-size:18px">📋</span>
-    <p style="font-size:13px;color:#a5b4fc"><strong style="color:#818cf8">สำคัญ:</strong> ต้องยื่นฟอร์ม <strong style="color:#c7d2fe">W-8BEN</strong> กับโบรกเกอร์ก่อน — ลดภาษีปันผลหุ้นทั่วไปจาก 30% → <strong style="color:#10b981">15%</strong> (ตามสนธิสัญญาภาษีไทย-สหรัฐ) US REIT และ Covered Call ETF ยังคงถูกหัก 30% อยู่</p>
-  </div>
-</div>
-
-<!-- SETUP BANNER -->
-<div id="setup-banner" style="max-width:980px;margin:.75rem auto 0;padding:0 1rem">
-  <div style="background:#1c1400;border:1px solid #854d0e;border-radius:10px;padding:.875rem 1.25rem">
-    <div style="display:flex;gap:.75rem;align-items:flex-start">
-      <span style="font-size:18px;flex-shrink:0">🔗</span>
-      <div style="flex:1">
-        <p style="color:#fbbf24;font-weight:600;font-size:14px;margin-bottom:4px">เชื่อม Google Sheets เพื่อดึงราคา Real-time</p>
-        <div style="display:flex;gap:8px;margin-top:.5rem;flex-wrap:wrap">
-          <input id="api-url-input" type="text" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
-            style="flex:1;min-width:200px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:6px 10px;font-size:12px;outline:none">
-          <button onclick="saveApiUrl()" style="background:#6366f1;color:white;border:none;border-radius:8px;padding:6px 16px;font-size:12px;cursor:pointer;font-weight:500">เชื่อมต่อ</button>
-          <button onclick="document.getElementById('setup-banner').style.display='none'"
-            style="background:#1e293b;color:#94a3b8;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">ข้าม</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- REALITY CHECK -->
-<div style="max-width:980px;margin:.75rem auto 0;padding:0 1rem">
-  <div style="background:#1c1400;border:1px solid #92400e;border-radius:10px;padding:.75rem 1.25rem;display:flex;gap:.75rem;align-items:flex-start">
-    <span style="font-size:16px;flex-shrink:0">⚠️</span>
-    <p style="font-size:13px;color:#fbbf24"><strong>Reality Check:</strong> เป้า 10,000 บาท/เดือน จากทุน 600,000 = ROI <strong>20%/ปี</strong> — JEPI (Covered Call ETF) ให้ผลตอบแทนสูงสุดราว ~9% (net ~6.3% หลังภาษี 30%) รายได้จริงอยู่ที่ <strong>~3,150 บาท/เดือน</strong> ต้องใช้ทุน ~1.9 ล้านบาทถึงจะถึงเป้า</p>
-  </div>
-</div>
-
-<main style="max-width:980px;margin:0 auto;padding:.75rem 1rem 2rem">
+<main style="max-width:1040px;margin:0 auto;padding:.875rem 1rem 3rem">
 
   <!-- TABS -->
-  <div style="border-bottom:1px solid #1e293b;margin-bottom:1.25rem;display:flex;gap:4px;overflow-x:auto">
-    <button class="tab-btn active" onclick="switchTab('sim',this)">Portfolio Simulator</button>
-    <button class="tab-btn" onclick="switchTab('tax',this)">ภาษี US</button>
-    <button class="tab-btn" onclick="switchTab('cap',this)">คำนวณเงินต้น</button>
-    <button class="tab-btn" onclick="switchTab('sheet',this)">Google Sheets</button>
+  <div style="border-bottom:1px solid #1e293b;margin-bottom:1.25rem;display:flex;gap:2px;overflow-x:auto">
+    <button class="tab-btn active" onclick="switchTab('sim',this)">📊 Portfolio</button>
+    <button class="tab-btn" onclick="switchTab('cap',this)">🧮 คำนวณเงินต้น</button>
+    <button class="tab-btn" onclick="switchTab('tax',this)">📋 ภาษี US</button>
   </div>
 
-  <!-- TAB: SIMULATOR -->
+  <!-- ========== TAB: PORTFOLIO ========== -->
   <div id="tab-sim" class="tab-panel show">
 
-    <p style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.625rem;font-weight:500">เลือก strategy</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:1.25rem" id="preset-cards"></div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-
-      <!-- SLIDERS -->
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <span style="font-weight:600;font-size:14px">จัดสรรพอร์ต</span>
-          <span style="font-size:12px;color:#64748b">รวม: <span id="total-pct" style="font-weight:600;color:#6366f1">100%</span></span>
+    <!-- SETTINGS BAR -->
+    <div class="card" style="margin-bottom:1rem;padding:.875rem 1.25rem">
+      <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:#64748b;white-space:nowrap">ทุนเริ่มต้น (THB)</span>
+          <input type="number" id="capital-input" value="600000" step="10000" min="1000" oninput="onCapitalChange()"
+            style="width:120px" class="inp" placeholder="600000">
         </div>
-        <div id="asset-rows"></div>
-        <!-- ADD STOCK FORM -->
-        <div style="margin-top:1rem;border-top:1px solid #1e293b;padding-top:1rem">
-          <div id="add-form" style="display:none;margin-bottom:.75rem">
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:6px">
-              <div>
-                <div style="font-size:10px;color:#64748b;margin-bottom:3px">Ticker</div>
-                <input id="new-ticker" type="text" placeholder="เช่น JEPI" maxlength="8"
-                  style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none;text-transform:uppercase">
-              </div>
-              <div>
-                <div style="font-size:10px;color:#64748b;margin-bottom:3px">Alloc %</div>
-                <input id="new-alloc" type="number" placeholder="10" min="0" max="100" step="1"
-                  style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
-              </div>
-              <div>
-                <div style="font-size:10px;color:#64748b;margin-bottom:3px">Yield %/ปี</div>
-                <input id="new-yield" type="number" placeholder="0" min="0" max="50" step="0.1"
-                  style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
-              </div>
-              <div>
-                <div style="font-size:10px;color:#64748b;margin-bottom:3px">ภาษี %</div>
-                <select id="new-tax" style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
-                  <option value="15">15%</option>
-                  <option value="30">30%</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px">
-              <button onclick="confirmAdd()" style="flex:1;background:#6366f1;color:white;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer;font-weight:500">เพิ่ม</button>
-              <button onclick="toggleAddForm(false)" style="background:#1e293b;color:#94a3b8;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">ยกเลิก</button>
-            </div>
-          </div>
-          <button onclick="toggleAddForm(true)" id="btn-add-stock"
-            style="width:100%;background:#1e293b;border:1px dashed #334155;color:#64748b;border-radius:8px;padding:7px;font-size:12px;cursor:pointer;transition:all .2s"
-            onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'"
-            onmouseout="this.style.borderColor='#334155';this.style.color='#64748b'">
-            + เพิ่มหุ้น / ETF
-          </button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:#64748b;white-space:nowrap">เป้า/เดือน (THB)</span>
+          <input type="number" id="target-input" value="10000" step="1000" min="1000" oninput="onTargetChange()"
+            style="width:100px" class="inp" placeholder="10000">
         </div>
-      </div>
-
-      <!-- CHART + METRICS -->
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1rem;text-align:center">
-          <canvas id="donut" width="160" height="160" style="display:block;margin:0 auto"></canvas>
-          <div id="legend" style="margin-top:.75rem;display:flex;flex-direction:column;gap:5px;text-align:left"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:#64748b;white-space:nowrap">USD/THB</span>
+          <input type="number" id="fx-rate" value="35" step="0.5" min="20" max="60" oninput="update()"
+            style="width:70px" class="inp">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem">
-            <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">ก่อนภาษี/ปี</div>
-            <div style="font-size:17px;font-weight:600" id="m-gross">—</div>
-          </div>
-          <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem">
-            <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">ภาษี US/ปี</div>
-            <div style="font-size:17px;font-weight:600;color:#f59e0b" id="m-tax">—</div>
-          </div>
-          <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem">
-            <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">สุทธิ/ปี</div>
-            <div style="font-size:17px;font-weight:600;color:#10b981" id="m-net-yr">—</div>
-          </div>
-          <div style="background:#0f172a;border:1px solid #6366f1;border-radius:10px;padding:.875rem">
-            <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">สุทธิ/เดือน</div>
-            <div style="font-size:22px;font-weight:700" id="m-net-mo">—</div>
-          </div>
-        </div>
+        <span style="font-size:12px;color:#475569">= <span id="fx-usd" style="color:#94a3b8;font-weight:500">$17,143</span></span>
       </div>
     </div>
 
-    <!-- FX RATE + CAPITAL -->
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:13px;color:#64748b;white-space:nowrap">ทุนเริ่มต้น (THB):</span>
-        <input type="number" id="capital-input" value="600000" step="10000" min="10000" oninput="onCapitalChange()"
-          style="width:110px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:13px;text-align:right;outline:none">
-      </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:13px;color:#64748b;white-space:nowrap">USD/THB:</span>
-        <input type="number" id="fx-rate" value="35" step="0.5" min="20" max="50" oninput="update()"
-          style="width:65px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:13px;text-align:center;outline:none">
-      </div>
-      <span style="font-size:12px;color:#64748b">= <span id="fx-usd" style="color:#94a3b8;font-weight:500">$17,143</span> USD</span>
-    </div>
-
-    <!-- FINNHUB API -->
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:.875rem 1.25rem;margin-bottom:1rem">
+    <!-- FINNHUB LIVE PRICE -->
+    <div class="card" style="margin-bottom:1rem;padding:.875rem 1.25rem">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:13px;font-weight:500">📡 Finnhub API</span>
-          <span style="font-size:11px;color:#64748b">(ราคาหุ้น US real-time ฟรี)</span>
-          <span id="fh-badge" style="display:none;font-size:11px;background:#052e16;color:#34d399;border:1px solid #166534;padding:2px 8px;border-radius:20px">● Connected</span>
+          <span style="font-size:13px;font-weight:600">📡 Live Price</span>
+          <span style="font-size:11px;color:#64748b">Finnhub API (ฟรี)</span>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <input id="fh-key" type="text" placeholder="API Key จาก finnhub.io (ฟรี)"
-            style="width:200px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:5px 10px;font-size:12px;outline:none">
-          <button onclick="fetchFinnhub()" id="fh-btn" style="background:#6366f1;color:white;border:none;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-weight:500">ดึงราคา</button>
-          <button onclick="toggleAutoRefresh()" id="fh-auto-btn" style="background:#1e293b;color:#64748b;border:1px solid #334155;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer">⏱ Auto</button>
-          <button onclick="toggleFhHelp()" style="background:#1e293b;color:#64748b;border:1px solid #334155;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer">วิธีรับ Key</button>
+          <input id="fh-key" type="text" placeholder="Finnhub API Key (finnhub.io)"
+            class="inp" style="width:230px;font-size:12px;padding:5px 10px">
+          <button onclick="fetchFinnhub()" id="fh-btn" class="btn btn-primary" style="padding:5px 14px;font-size:12px">ดึงราคา</button>
+          <button onclick="toggleAutoRefresh()" id="fh-auto-btn" class="btn btn-ghost" style="padding:5px 10px;font-size:12px">⏱ Auto 5m</button>
+          <button onclick="g('fh-help').style.display=g('fh-help').style.display==='none'?'block':'none'" class="btn btn-ghost" style="padding:5px 10px;font-size:12px">?</button>
         </div>
-        <div style="font-size:11px;color:#475569;margin-top:4px" id="fh-updated"></div>
       </div>
-      <div id="fh-help" style="display:none;margin-top:.75rem;background:#1e293b;border-radius:8px;padding:.75rem;font-size:12px;color:#94a3b8;line-height:1.8">
-        1. ไปที่ <strong style="color:#c7d2fe">finnhub.io</strong> → กด <strong>Get free API key</strong><br>
-        2. สมัครบัญชีฟรี → ได้ API Key ทันที<br>
-        3. วาง Key ในช่องด้านบน → กด <strong>ดึงราคา</strong><br>
-        <span style="color:#475569">* ฟรี 60 requests/นาที | ราคา delay ~15 วินาที</span>
+      <div id="fh-help" style="display:none;margin-top:.75rem;background:#1e293b;border-radius:8px;padding:.75rem;font-size:12px;color:#94a3b8;line-height:2">
+        1. ไปที่ <strong style="color:#c7d2fe">finnhub.io</strong> → กด <strong>Get free API key</strong> → สมัครฟรี<br>
+        2. คัดลอก API Key → วางในช่องด้านบน → กด <strong>ดึงราคา</strong><br>
+        <span style="color:#475569">ฟรี 60 req/นาที · ราคา delay ~15 วินาที · yield คำนวณจาก DPS/ราคา</span>
       </div>
-      <div id="fh-prices" style="display:none;margin-top:.75rem;display:none"></div>
+      <div id="fh-price-grid" style="display:none;margin-top:.875rem;display:none;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px"></div>
+      <div id="fh-updated" style="font-size:11px;color:#475569;margin-top:5px"></div>
+    </div>
+
+    <!-- PRESETS -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem">
+      <p style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Strategy Presets <span id="preset-count" style="color:#334155;font-size:10px;text-transform:none;letter-spacing:0"></span></p>
+    </div>
+
+    <!-- Save Preset Modal -->
+    <div id="save-preset-modal" style="display:none;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:1rem;margin-bottom:.875rem">
+      <div style="font-size:13px;font-weight:600;margin-bottom:.625rem">บันทึก Preset จากพอร์ตปัจจุบัน</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.625rem">
+        <div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">ชื่อ Preset</div>
+          <input id="sp-name" type="text" placeholder="เช่น QQQI Heavy" class="inp" style="font-size:12px;padding:5px 8px">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">ระดับความเสี่ยง</div>
+          <select id="sp-risk" class="inp" style="font-size:12px;padding:5px 8px">
+            <option value="low">ต่ำ</option>
+            <option value="mid" selected>ปานกลาง</option>
+            <option value="hi">สูง</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:.625rem" id="sp-preview"></div>
+      <div style="display:flex;gap:6px">
+        <button onclick="saveCurrentAsPreset()" class="btn btn-primary" style="font-size:12px;padding:5px 14px">บันทึก</button>
+        <button onclick="g('save-preset-modal').style.display='none'" class="btn btn-ghost" style="font-size:12px;padding:5px 10px">ยกเลิก</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:.75rem" id="preset-cards"></div>
+
+    <!-- Edit mode banner -->
+    <div id="edit-banner" style="display:none;background:#1e1b4b;border:1px solid #4338ca;border-radius:10px;padding:.625rem 1rem;margin-bottom:.875rem;display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px">✏️</span>
+        <span style="font-size:13px;font-weight:500;color:#a5b4fc">กำลังแก้ไข: <strong id="edit-name" style="color:#818cf8"></strong></span>
+        <span style="font-size:11px;color:#475569">ปรับ slider / เพิ่ม-ลบหุ้น แล้วกดบันทึก</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="saveEditPreset()" class="btn btn-primary" style="font-size:12px;padding:5px 14px">💾 บันทึกการแก้ไข</button>
+        <button onclick="cancelEditPreset()" class="btn btn-ghost" style="font-size:12px;padding:5px 10px">ยกเลิก</button>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+
+      <!-- LEFT: SLIDERS -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <span style="font-weight:600;font-size:14px">จัดสรรพอร์ต</span>
+          <span style="font-size:12px;color:#64748b">รวม: <span id="total-pct" style="font-weight:700;color:#6366f1">100%</span></span>
+        </div>
+        <div id="asset-rows"></div>
+        <hr class="divider">
+        <!-- ADD FORM -->
+        <div id="add-form" style="display:none;margin-bottom:.75rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+            <div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px">Ticker</div>
+              <input id="new-ticker" type="text" placeholder="เช่น JEPI" maxlength="8" class="inp" style="font-size:13px;padding:5px 8px;text-transform:uppercase">
+            </div>
+            <div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px">Alloc %</div>
+              <input id="new-alloc" type="number" placeholder="10" min="0" max="100" step="1" class="inp" style="font-size:13px;padding:5px 8px">
+            </div>
+            <div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px">Yield %/ปี</div>
+              <input id="new-yield" type="number" placeholder="0" min="0" max="50" step="0.1" class="inp" style="font-size:13px;padding:5px 8px">
+            </div>
+            <div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px">ภาษี US</div>
+              <select id="new-tax" class="inp" style="font-size:13px;padding:5px 8px">
+                <option value="15">15% (หุ้น/ETF)</option>
+                <option value="30">30% (REIT/CC ETF)</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="confirmAdd()" class="btn btn-primary" style="flex:1;font-size:12px;padding:6px">+ เพิ่ม</button>
+            <button onclick="toggleAddForm(false)" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">ยกเลิก</button>
+          </div>
+        </div>
+        <button onclick="toggleAddForm(true)" id="btn-add-stock" class="btn btn-ghost"
+          style="width:100%;border-style:dashed;font-size:12px;padding:7px">+ เพิ่มหุ้น / ETF</button>
+      </div>
+
+      <!-- RIGHT: CHART + METRICS -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card" style="text-align:center;padding:1rem">
+          <canvas id="donut" width="150" height="150" style="display:block;margin:0 auto"></canvas>
+          <div id="legend" style="margin-top:.75rem;display:flex;flex-direction:column;gap:4px;text-align:left"></div>
+        </div>
+        <div class="grid2">
+          <div class="card" style="padding:.75rem">
+            <div style="font-size:10px;color:#64748b;text-transform:uppercase;margin-bottom:3px">ก่อนภาษี/ปี</div>
+            <div style="font-size:16px;font-weight:600" id="m-gross">—</div>
+          </div>
+          <div class="card" style="padding:.75rem">
+            <div style="font-size:10px;color:#f59e0b;text-transform:uppercase;margin-bottom:3px">ภาษี US/ปี</div>
+            <div style="font-size:16px;font-weight:600;color:#f59e0b" id="m-tax">—</div>
+          </div>
+          <div class="card" style="padding:.75rem">
+            <div style="font-size:10px;color:#10b981;text-transform:uppercase;margin-bottom:3px">สุทธิ/ปี</div>
+            <div style="font-size:16px;font-weight:600;color:#10b981" id="m-net-yr">—</div>
+          </div>
+          <div class="card" style="padding:.75rem;border-color:#3730a3;background:#1e1b4b">
+            <div style="font-size:10px;color:#818cf8;text-transform:uppercase;margin-bottom:3px">สุทธิ/เดือน</div>
+            <div style="font-size:20px;font-weight:700" id="m-net-mo">—</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- GAP ANALYSIS -->
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-      <div style="font-weight:600;font-size:14px;margin-bottom:.875rem">Gap Analysis — ห่างจากเป้า ฿10,000/เดือน</div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-        <span style="color:#64748b">ความคืบหน้า</span>
-        <span id="gap-pct-lbl" style="font-weight:500">0%</span>
+    <div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
+        <span style="font-weight:600;font-size:14px">Gap Analysis</span>
+        <span id="gap-roi-badge" class="badge badge-blue">ROI <span id="gap-cur-roi" style="margin-left:3px">0%</span></span>
       </div>
-      <div class="progress-track" style="margin-bottom:1rem">
-        <div class="progress-fill" id="gap-bar" style="width:0%;background:#6366f1"></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+        <span style="color:#64748b">ความคืบหน้าสู่เป้าหมาย</span>
+        <span id="gap-pct-lbl" style="font-weight:600">0%</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem">
-        <div style="background:#1e293b;border-radius:8px;padding:.75rem">
-          <div style="font-size:11px;color:#64748b;margin-bottom:3px">ได้จริง/เดือน</div>
-          <div style="font-size:15px;font-weight:600" id="gap-actual">—</div>
-        </div>
-        <div style="background:#1e293b;border-radius:8px;padding:.75rem">
-          <div style="font-size:11px;color:#64748b;margin-bottom:3px">ขาด / เกิน</div>
-          <div style="font-size:15px;font-weight:600" id="gap-diff">—</div>
-        </div>
-        <div style="background:#1e293b;border-radius:8px;padding:.75rem">
-          <div style="font-size:11px;color:#64748b;margin-bottom:3px">ROI สุทธิปัจจุบัน</div>
-          <div style="font-size:15px;font-weight:600;color:#f59e0b" id="gap-cur-roi">—</div>
-        </div>
+      <div style="background:#1e293b;border-radius:20px;height:8px;overflow:hidden;margin-bottom:1rem">
+        <div id="gap-bar" style="height:100%;border-radius:20px;transition:width .5s,background .3s;width:0%"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-        <div style="background:#1e293b;border-radius:8px;padding:.75rem">
-          <div style="font-size:11px;color:#64748b;margin-bottom:3px">ต้องใช้ทุน THB (strategy เดิม)</div>
-          <div style="font-size:15px;font-weight:600;color:#38bdf8" id="gap-need-cap">—</div>
-          <div style="font-size:11px;color:#64748b;margin-top:2px">เพิ่มอีก <span id="gap-add-cap">—</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:.875rem">
+        <div style="background:#1e293b;border-radius:10px;padding:.75rem">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">ได้จริง/เดือน</div>
+          <div style="font-size:16px;font-weight:700" id="gap-actual">—</div>
         </div>
-        <div style="background:#1e293b;border-radius:8px;padding:.75rem">
-          <div style="font-size:11px;color:#64748b;margin-bottom:3px">ต้องใช้ทุน USD</div>
-          <div style="font-size:15px;font-weight:600;color:#38bdf8" id="gap-need-usd">—</div>
-          <div style="font-size:11px;color:#64748b;margin-top:2px">ที่อัตรา <span id="gap-fx-rate">35</span> บาท/$</div>
+        <div style="background:#1e293b;border-radius:10px;padding:.75rem">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">ขาด / เกิน</div>
+          <div style="font-size:16px;font-weight:700" id="gap-diff">—</div>
+        </div>
+        <div style="background:#1e293b;border-radius:10px;padding:.75rem">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">ต้องใช้ทุน (THB)</div>
+          <div style="font-size:15px;font-weight:700;color:#38bdf8" id="gap-need-cap">—</div>
+        </div>
+        <div style="background:#1e293b;border-radius:10px;padding:.75rem">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">ต้องใช้ทุน (USD)</div>
+          <div style="font-size:15px;font-weight:700;color:#6366f1" id="gap-need-usd">—</div>
         </div>
       </div>
-      <div id="gap-alert" style="padding:.75rem 1rem;border-radius:8px;font-size:13px;font-weight:500"></div>
+      <div id="gap-alert" style="border-radius:8px;padding:.75rem 1rem;font-size:13px;font-weight:500"></div>
     </div>
 
-    <!-- MONTHLY DIVIDEND BREAKDOWN -->
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem;margin-top:1rem">
+    <!-- MONTHLY DIVIDEND TABLE -->
+    <div class="card">
       <div style="font-weight:600;font-size:14px;margin-bottom:.875rem">ปันผลรายเดือน — แยกตาม Ticker</div>
       <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:13px" id="div-table">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
             <tr style="color:#64748b;border-bottom:1px solid #1e293b">
-              <th style="text-align:left;padding:7px 0;font-weight:500">Ticker</th>
-              <th style="text-align:right;padding:7px 0;font-weight:500">สัดส่วน</th>
-              <th style="text-align:right;padding:7px 0;font-weight:500">มูลค่า (THB)</th>
-              <th style="text-align:right;padding:7px 0;font-weight:500">ก่อนภาษี/เดือน</th>
-              <th style="text-align:right;padding:7px 0;font-weight:500">ภาษีUS/เดือน</th>
-              <th style="text-align:right;padding:7px 6px;font-weight:500;color:#6366f1">สุทธิ/เดือน</th>
-              <th style="text-align:center;padding:7px 0;font-weight:500">จ่ายทุก</th>
+              <th style="text-align:left;padding:6px 0;font-weight:500">Ticker</th>
+              <th style="text-align:right;padding:6px 0;font-weight:500">%</th>
+              <th style="text-align:right;padding:6px 0;font-weight:500">มูลค่า</th>
+              <th style="text-align:right;padding:6px 0;font-weight:500">ก่อนภาษี/เดือน</th>
+              <th style="text-align:right;padding:6px 0;font-weight:500;color:#f59e0b">ภาษี/เดือน</th>
+              <th style="text-align:right;padding:6px 6px;font-weight:500;color:#6366f1">สุทธิ/เดือน</th>
+              <th style="text-align:center;padding:6px 0;font-weight:500">จ่ายทุก</th>
             </tr>
           </thead>
           <tbody id="div-tbody"></tbody>
@@ -289,520 +295,936 @@
       </div>
     </div>
 
-    <!-- LIVE DATA PANEL -->
-    <div id="live-panel" style="display:none;background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem;margin-top:1rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
-        <div style="font-weight:600;font-size:14px">ราคา Real-time จาก Google Sheets</div>
-        <span style="font-size:11px;color:#64748b" id="last-updated">—</span>
-      </div>
-      <div id="live-assets" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"></div>
-    </div>
-
   </div>
 
-  <!-- TAB: TAX -->
+  <!-- ========== TAB: CAPITAL CALCULATOR ========== -->
+  <div id="tab-cap" class="tab-panel">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem" class="main-grid">
+
+      <!-- LEFT: Stock Picker + Calc -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="card">
+          <div style="font-weight:600;font-size:14px;margin-bottom:1rem">เพิ่มหุ้นเข้าตาราง</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem">
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">Ticker</div>
+              <input id="calc-ticker" type="text" placeholder="เช่น QQQI, JEPI" class="inp" style="text-transform:uppercase" oninput="calcTickerHint()">
+              <div id="calc-hint" style="font-size:11px;color:#6366f1;margin-top:3px;min-height:16px"></div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">ราคาหุ้น ($)</div>
+              <div style="display:flex;gap:4px">
+                <input id="calc-price" type="number" placeholder="ราคาปัจจุบัน" class="inp" step="0.01" oninput="calcUpdate()" style="flex:1;min-width:0">
+                <button onclick="fetchCalcPrice()" id="calc-price-btn" class="btn btn-ghost" style="padding:5px 8px;font-size:11px;white-space:nowrap;flex-shrink:0" title="ดึงราคาจาก Finnhub">📡</button>
+              </div>
+              <div id="calc-price-hint" style="font-size:11px;margin-top:3px;min-height:16px;color:#475569"></div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">DPS/ปี ($)</div>
+              <input id="calc-dps" type="number" placeholder="เงินปันผล/หุ้น/ปี" class="inp" step="0.01" oninput="calcUpdate()">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">ภาษี US %</div>
+              <select id="calc-tax" class="inp" onchange="calcUpdate()">
+                <option value="15">15% (หุ้น/ETF ทั่วไป)</option>
+                <option value="30">30% (REIT / Covered Call)</option>
+              </select>
+            </div>
+          </div>
+          <!-- Live calc preview -->
+          <div id="calc-preview" style="background:#1e293b;border-radius:10px;padding:.875rem;margin-bottom:.75rem;display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+              <div>
+                <div style="font-size:10px;color:#64748b;margin-bottom:2px">Gross Yield</div>
+                <div style="font-weight:700;color:#f1f5f9" id="cp-gross-yield">—</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#f59e0b;margin-bottom:2px">ภาษี</div>
+                <div style="font-weight:700;color:#f59e0b" id="cp-tax">—</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#10b981;margin-bottom:2px">Net Yield</div>
+                <div style="font-weight:700;color:#10b981" id="cp-net-yield">—</div>
+              </div>
+            </div>
+          </div>
+          <button onclick="addToCalcTable()" class="btn btn-primary" style="width:100%;font-size:13px">+ เพิ่มเข้าตาราง</button>
+        </div>
+
+        <!-- Capital needed calc -->
+        <div class="card">
+          <div style="font-weight:600;font-size:14px;margin-bottom:1rem">คำนวณเงินต้นที่ต้องการ</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.875rem">
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">เป้าหมาย/เดือน (THB)</div>
+              <input id="c-target" type="number" value="10000" step="1000" class="inp" oninput="calcCapNeeded()">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">USD/THB</div>
+              <input id="c-fx" type="number" value="35" step="0.5" class="inp" oninput="calcCapNeeded()">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">Net Yield % ที่คาดหวัง</div>
+              <input id="c-roi" type="number" value="6" step="0.5" class="inp" oninput="calcCapNeeded()">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px">ภาษีเฉลี่ย %</div>
+              <input id="c-tax-avg" type="number" value="25" step="1" class="inp" oninput="calcCapNeeded()">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#1e293b;border-radius:10px;padding:.875rem;text-align:center">
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px">ต้องการทุน (THB)</div>
+              <div style="font-size:18px;font-weight:700;color:#38bdf8" id="c-cap-thb">—</div>
+            </div>
+            <div style="background:#1e293b;border-radius:10px;padding:.875rem;text-align:center">
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px">ต้องการทุน (USD)</div>
+              <div style="font-size:18px;font-weight:700;color:#6366f1" id="c-cap-usd">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Comparison Table -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
+          <span style="font-weight:600;font-size:14px">ตารางเปรียบเทียบหุ้น</span>
+          <button onclick="clearCalcTable()" class="btn btn-ghost" style="font-size:11px;padding:4px 10px">ล้าง</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="color:#64748b;border-bottom:1px solid #1e293b">
+                <th style="text-align:left;padding:6px 0;font-weight:500">Ticker</th>
+                <th style="text-align:right;padding:6px 0;font-weight:500">ราคา $</th>
+                <th style="text-align:right;padding:6px 0;font-weight:500">DPS $</th>
+                <th style="text-align:right;padding:6px 0;font-weight:500">Gross%</th>
+                <th style="text-align:right;padding:6px 0;font-weight:500;color:#f59e0b">ภาษี</th>
+                <th style="text-align:right;padding:6px 0;font-weight:500;color:#10b981">Net%</th>
+                <th style="text-align:right;padding:6px 0;font-weight:500;color:#38bdf8">ทุน/10k</th>
+                <th style="padding:6px 0"></th>
+              </tr>
+            </thead>
+            <tbody id="calc-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:2rem;color:#475569;font-size:13px">เพิ่มหุ้นจากฝั่งซ้ายเพื่อเปรียบเทียบ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:1rem;background:#1e293b;border-radius:10px;padding:.875rem;font-size:12px;color:#64748b;line-height:2">
+          <strong style="color:#94a3b8">หมายเหตุ:</strong><br>
+          · ทุน/10k = ทุนที่ต้องการ (THB) เพื่อได้ 10,000 บาท/เดือน<br>
+          · คำนวณจาก Net Yield หลังหักภาษี US<br>
+          · ราคาอ้างอิงจาก Finnhub ถ้าเชื่อมต่อไว้แล้ว
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Reference Table -->
+    <div class="card" style="margin-top:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:.875rem">
+        <div>
+          <div style="font-weight:600;font-size:14px">ตารางอ้างอิง DPS</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px">TTM Annualized — June 2026 · แก้ไขได้ตามข้อมูลล่าสุด</div>
+        </div>
+        <button onclick="g('ref-add-form').style.display=g('ref-add-form').style.display==='none'?'block':'none'" class="btn btn-ghost" style="font-size:12px;padding:5px 12px">+ เพิ่มหุ้น</button>
+      </div>
+
+      <!-- Add form -->
+      <div id="ref-add-form" style="display:none;background:#1e293b;border-radius:10px;padding:.875rem;margin-bottom:.875rem">
+        <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:.625rem">เพิ่มหุ้นในตารางอ้างอิง</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:.625rem">
+          <div>
+            <div style="font-size:10px;color:#64748b;margin-bottom:3px">Ticker</div>
+            <input id="ref-new-ticker" type="text" placeholder="เช่น DRGO" class="inp" style="font-size:12px;padding:5px 8px;text-transform:uppercase">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#64748b;margin-bottom:3px">ชื่อย่อ</div>
+            <input id="ref-new-name" type="text" placeholder="ชื่อ ETF/หุ้น" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#64748b;margin-bottom:3px">DPS/ปี ($)</div>
+            <input id="ref-new-dps" type="number" placeholder="0.00" step="0.01" min="0" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#64748b;margin-bottom:3px">ภาษี US</div>
+            <select id="ref-new-tax" class="inp" style="font-size:12px;padding:5px 8px">
+              <option value="15">15%</option>
+              <option value="30">30% (REIT/CC)</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;color:#64748b;margin-bottom:3px">จ่ายทุก</div>
+            <select id="ref-new-freq" class="inp" style="font-size:12px;padding:5px 8px">
+              <option value="รายเดือน">รายเดือน</option>
+              <option value="รายไตรมาส">รายไตรมาส</option>
+              <option value="—">—</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="addRefRow()" class="btn btn-primary" style="font-size:12px;padding:5px 14px">เพิ่ม</button>
+          <button onclick="g('ref-add-form').style.display='none'" class="btn btn-ghost" style="font-size:12px;padding:5px 10px">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div style="position:relative;margin-bottom:.75rem">
+        <input id="ref-search" type="text" placeholder="🔍 ค้นหา Ticker หรือชื่อ..." class="inp" oninput="renderRefTable()" style="padding-left:12px">
+      </div>
+
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="color:#64748b;border-bottom:1px solid #1e293b">
+            <th style="text-align:left;padding:6px 0;font-weight:500;cursor:pointer" onclick="sortRef('ticker')">Ticker ↕</th>
+            <th style="text-align:left;padding:6px 0;font-weight:500">ชื่อ</th>
+            <th style="text-align:right;padding:6px 0;font-weight:500;cursor:pointer" onclick="sortRef('dps')">DPS $ ↕</th>
+            <th style="text-align:right;padding:6px 0;font-weight:500">ภาษี</th>
+            <th style="text-align:center;padding:6px 0;font-weight:500">จ่ายทุก</th>
+            <th style="text-align:center;padding:6px 0;font-weight:500"></th>
+          </tr></thead>
+          <tbody id="ref-tbody"></tbody>
+        </table>
+        <div id="ref-empty" style="display:none;text-align:center;padding:1.5rem;color:#475569;font-size:13px">ไม่พบหุ้นที่ค้นหา</div>
+      </div>
+      <div style="margin-top:.625rem;font-size:11px;color:#334155" id="ref-count"></div>
+    </div>
+  </div>
+
+  <!-- ========== TAB: TAX ========== -->
   <div id="tab-tax" class="tab-panel">
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-      <div style="font-weight:600;margin-bottom:.25rem">ภาษีสำหรับคนไทยที่ลงทุนหุ้น US</div>
-      <div style="font-size:13px;color:#64748b;margin-bottom:1rem">ข้อมูลตามสนธิสัญญาภาษีซ้อนไทย-สหรัฐอเมริกา (ต้องยื่น W-8BEN)</div>
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-weight:600;font-size:15px;margin-bottom:.25rem">ภาษีหุ้น US สำหรับนักลงทุนไทย</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:1rem">ตามสนธิสัญญาภาษีซ้อนไทย-สหรัฐอเมริกา (ต้องยื่น W-8BEN)</div>
+      <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:10px;padding:.875rem;margin-bottom:1rem;font-size:13px;color:#a5b4fc">
+        📋 <strong style="color:#818cf8">W-8BEN:</strong> ต้องยื่นกับโบรกเกอร์ก่อน — ลดภาษีปันผลหุ้นทั่วไปจาก <strong>30% → 15%</strong>
+        US REIT และ Covered Call ETF ยังคงถูกหัก <strong>30%</strong> อยู่ | Capital Gain = <strong style="color:#10b981">0%</strong> สำหรับ Non-resident alien
+      </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="color:#64748b;border-bottom:1px solid #1e293b">
-          <th style="text-align:left;padding:6px 0;font-weight:500">ประเภท Asset</th>
-          <th style="text-align:left;padding:6px 0;font-weight:500">ตัวอย่าง</th>
-          <th style="text-align:right;padding:6px 0;font-weight:500">Gross Yield</th>
-          <th style="text-align:right;padding:6px 0;font-weight:500">ภาษี US</th>
-          <th style="text-align:right;padding:6px 0;font-weight:500">Net Yield</th>
+          <th style="text-align:left;padding:8px 0;font-weight:500">ประเภท Asset</th>
+          <th style="text-align:left;padding:8px 0;font-weight:500">ตัวอย่าง</th>
+          <th style="text-align:right;padding:8px 0;font-weight:500">Gross Yield</th>
+          <th style="text-align:right;padding:8px 0;font-weight:500">ภาษี US</th>
+          <th style="text-align:right;padding:8px 0;font-weight:500">Net Yield</th>
         </tr></thead>
         <tbody id="tax-tbody"></tbody>
       </table>
-      <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:8px;padding:.875rem">
-          <div style="color:#818cf8;font-weight:600;font-size:13px;margin-bottom:.5rem">📋 W-8BEN คืออะไร</div>
-          <ul style="font-size:12px;color:#a5b4fc;display:flex;flex-direction:column;gap:4px;padding-left:1rem">
-            <li>ฟอร์มยืนยันตัวตนว่าเป็น Non-US Person</li>
-            <li>ยื่นกับโบรกเกอร์ครั้งเดียว มีอายุ 3 ปี</li>
-            <li>ลดภาษีปันผลหุ้นทั่วไปจาก 30% → 15%</li>
-            <li>โบรกเกอร์ไทยที่รองรับ: IBKR, Moomoo, Webull</li>
-          </ul>
-        </div>
-        <div style="background:#052e16;border:1px solid #166534;border-radius:8px;padding:.875rem">
-          <div style="color:#34d399;font-weight:600;font-size:13px;margin-bottom:.5rem">✅ ข้อได้เปรียบหุ้น US</div>
-          <ul style="font-size:12px;color:#86efac;display:flex;flex-direction:column;gap:4px;padding-left:1rem">
-            <li>Capital Gain ไม่เสียภาษีสำหรับ NRA</li>
-            <li>ตลาดใหญ่ สภาพคล่องสูง หลากหลาย sector</li>
-            <li>ETF เช่น JEPI ให้ yield สูงถึง 9%/ปี</li>
-            <li>DRIP (ลงทุนปันผลซ้ำอัตโนมัติ) ได้ง่าย</li>
-          </ul>
-        </div>
-        <div style="background:#1c1400;border:1px solid #854d0e;border-radius:8px;padding:.875rem">
-          <div style="color:#fbbf24;font-weight:600;font-size:13px;margin-bottom:.5rem">⚠️ ความเสี่ยงที่ต้องรู้</div>
-          <ul style="font-size:12px;color:#fde68a;display:flex;flex-direction:column;gap:4px;padding-left:1rem">
-            <li>ความเสี่ยงค่าเงิน USD/THB</li>
-            <li>US REIT + Covered Call ETF ถูกหัก 30% เสมอ</li>
-            <li>ต้องแจ้งรายได้ต่างประเทศใน ภ.ง.ด. 90 (ถ้าโอนกลับไทยปีเดียว)</li>
-            <li>FDIC ไม่คุ้มครองหุ้น (แต่ SIPC คุ้มครองถึง $500k)</li>
-          </ul>
-        </div>
-        <div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:.875rem">
-          <div style="color:#94a3b8;font-weight:600;font-size:13px;margin-bottom:.5rem">🏦 โบรกเกอร์แนะนำ</div>
-          <ul style="font-size:12px;color:#64748b;display:flex;flex-direction:column;gap:4px;padding-left:1rem">
-            <li>Interactive Brokers (IBKR) — ค่าธรรมเนียมต่ำสุด</li>
-            <li>Moomoo — ใช้งานง่าย มีภาษาไทย</li>
-            <li>Webull — ฟรีค่า commission</li>
-            <li>ทุกเจ้ารองรับ W-8BEN ออนไลน์</li>
-          </ul>
-        </div>
-      </div>
     </div>
-  </div>
-
-  <!-- TAB: CAPITAL CALC -->
-  <div id="tab-cap" class="tab-panel">
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-      <div style="font-weight:600;margin-bottom:.25rem">คำนวณเงินต้นที่ต้องการ</div>
-      <div style="font-size:13px;color:#64748b;margin-bottom:1rem">ป้อนเป้าหมาย, Net ROI และอัตราแลกเปลี่ยน</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1rem">
-        <div>
-          <label style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">เป้า/เดือน (THB)</label>
-          <input type="number" id="c-target" value="10000" step="1000" oninput="calcCap()"
-            style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 10px;font-size:14px;outline:none">
-        </div>
-        <div>
-          <label style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">Net ROI/ปี หลังภาษี US (%)</label>
-          <input type="number" id="c-roi" value="6" step="0.5" oninput="calcCap()"
-            style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 10px;font-size:14px;outline:none">
-        </div>
-        <div>
-          <label style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">USD/THB</label>
-          <input type="number" id="c-fx" value="35" step="0.5" oninput="calcCap()"
-            style="width:100%;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 10px;font-size:14px;outline:none">
+    <div class="grid2">
+      <div class="card" style="background:#1e1b4b;border-color:#3730a3">
+        <div style="font-weight:600;color:#818cf8;margin-bottom:.5rem">✅ ภาษีที่ลดได้ด้วย W-8BEN</div>
+        <div style="font-size:13px;color:#a5b4fc;line-height:2">
+          · Dividend หุ้นรายตัว (KO, JNJ, MSFT…) 30%→<strong>15%</strong><br>
+          · Dividend ETF (SCHD, VYM, VOO…) 30%→<strong>15%</strong><br>
+          · Capital Gain ทุกชนิด → <strong>0%</strong>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem">
-        <div style="background:#1e293b;border-radius:10px;padding:.875rem;text-align:center">
-          <div style="font-size:10px;color:#64748b;text-transform:uppercase;margin-bottom:4px">เงินต้น (THB)</div>
-          <div style="font-size:18px;font-weight:600;color:#38bdf8" id="c-cap-thb">—</div>
-        </div>
-        <div style="background:#1e293b;border-radius:10px;padding:.875rem;text-align:center">
-          <div style="font-size:10px;color:#64748b;text-transform:uppercase;margin-bottom:4px">เงินต้น (USD)</div>
-          <div style="font-size:18px;font-weight:600;color:#6366f1" id="c-cap-usd">—</div>
-        </div>
-        <div style="background:#1e293b;border-radius:10px;padding:.875rem;text-align:center">
-          <div style="font-size:10px;color:#64748b;text-transform:uppercase;margin-bottom:4px">เพิ่มจาก 600k</div>
-          <div style="font-size:18px;font-weight:600;color:#f59e0b" id="c-extra">—</div>
-        </div>
-        <div style="background:#1e293b;border-radius:10px;padding:.875rem;text-align:center">
-          <div style="font-size:10px;color:#64748b;text-transform:uppercase;margin-bottom:4px">รายได้/ปี (THB)</div>
-          <div style="font-size:18px;font-weight:600;color:#10b981" id="c-ann">—</div>
+      <div class="card" style="background:#1c1400;border-color:#92400e">
+        <div style="font-weight:600;color:#fbbf24;margin-bottom:.5rem">⚠️ ภาษีที่ลด ไม่ได้</div>
+        <div style="font-size:13px;color:#fde68a;line-height:2">
+          · US REIT ETF (VNQ, O, STAG…) คงที่ <strong>30%</strong><br>
+          · Covered Call ETF (JEPI, QQQI, QYLD…) คงที่ <strong>30%</strong><br>
+          · Return of Capital บางส่วน → ซับซ้อน
         </div>
       </div>
-      <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;font-weight:500">ตารางอ้างอิง — เงินต้นสำหรับ 10,000 บาท/เดือน (USD/THB = 35)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr style="color:#64748b;border-bottom:1px solid #1e293b">
-          <th style="text-align:left;padding:6px 0;font-weight:500">Net ROI</th>
-          <th style="text-align:right;padding:6px 0;font-weight:500">เงินต้น (THB)</th>
-          <th style="text-align:right;padding:6px 0;font-weight:500">เงินต้น (USD)</th>
-          <th style="text-align:right;padding:6px 0;font-weight:500">Asset แนะนำ</th>
-        </tr></thead>
-        <tbody>
-          <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#94a3b8">1.3%</td><td style="text-align:right;padding:8px 0">฿9,230,769</td><td style="text-align:right;padding:8px 0">$263,736</td><td style="text-align:right;padding:8px 0;color:#64748b">VOO (หลังภาษี)</td></tr>
-          <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#94a3b8">3%</td><td style="text-align:right;padding:8px 0">฿4,000,000</td><td style="text-align:right;padding:8px 0">$114,286</td><td style="text-align:right;padding:8px 0;color:#64748b">SCHD</td></tr>
-          <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#94a3b8">3.5%</td><td style="text-align:right;padding:8px 0">฿3,429,000</td><td style="text-align:right;padding:8px 0">$98,000</td><td style="text-align:right;padding:8px 0;color:#64748b">VNQ / Realty Income</td></tr>
-          <tr style="background:#1e1b4b;border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#818cf8;font-weight:600">6.3%</td><td style="text-align:right;padding:8px 0;color:#818cf8;font-weight:600">฿1,905,000</td><td style="text-align:right;padding:8px 0;color:#818cf8;font-weight:600">$54,430</td><td style="text-align:right;padding:8px 0;color:#a5b4fc">JEPI (หลังภาษี 30%)</td></tr>
-          <tr style="background:#1c1400"><td style="padding:8px 0;color:#fbbf24;font-weight:600">20%</td><td style="text-align:right;padding:8px 0;color:#fbbf24;font-weight:600">฿600,000</td><td style="text-align:right;padding:8px 0;color:#fbbf24;font-weight:600">$17,143</td><td style="text-align:right;padding:8px 0;color:#fde68a">ความเสี่ยงสูงมาก ⚠️</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- TAB: GOOGLE SHEETS -->
-  <div id="tab-sheet" class="tab-panel">
-    <div style="display:flex;flex-direction:column;gap:1rem">
-
-      <!-- STEP 1 -->
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
-          <div style="width:28px;height:28px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;color:white">1</div>
-          <div>
-            <div style="font-weight:600;font-size:14px">Sheet: Portfolio — ข้อมูลหลัก</div>
-            <div style="font-size:12px;color:#64748b">Apps Script จะอ่านชีตนี้ส่งเข้าแอป</div>
-          </div>
-        </div>
-        <div style="background:#0d1117;border:1px solid #1e293b;border-radius:8px;padding:1rem;font-size:12px;font-family:monospace;overflow-x:auto;color:#e2e8f0;line-height:2">
-          <span style="color:#64748b">     A                B          C           D         E</span><br>
-          <span style="color:#64748b">1    US Portfolio Planner</span><br>
-          <span style="color:#64748b">2    ทุนเริ่มต้น (THB)  600000</span><br>
-          <span style="color:#64748b">3    เป้าหมาย/เดือน    10000</span><br>
-          <span style="color:#64748b">4    USD/THB Rate      35</span><br>
-          <span style="color:#64748b">5</span><br>
-          <span style="color:#94a3b8">6    Asset             Alloc%     Yield%      Tax%      Ticker</span><br>
-          <span style="color:#10b981">7    JEPI              40         9           30        JEPI</span><br>
-          <span style="color:#10b981">8    SCHD              30         3.5         15        SCHD</span><br>
-          <span style="color:#10b981">9    VNQ               20         5           30        VNQ</span><br>
-          <span style="color:#10b981">10   VOO               10         1.5         15        VOO</span><br>
-          <span style="color:#10b981">11   (ว่าง)            0          0           0</span>
-        </div>
-      </div>
-
-      <!-- STEP 2 -->
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
-          <div style="width:28px;height:28px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;color:white">2</div>
-          <div>
-            <div style="font-weight:600;font-size:14px">Sheet: PriceData — ดึงราคา Real-time</div>
-            <div style="font-size:12px;color:#64748b">สูตร GOOGLEFINANCE ดึงราคาหุ้น US แบบ Delay 15-20 นาที</div>
-          </div>
-        </div>
-        <div style="background:#0d1117;border:1px solid #1e293b;border-radius:8px;padding:1rem;font-size:12px;font-family:monospace;overflow-x:auto;color:#e2e8f0;line-height:2">
-          <span style="color:#64748b">     A       B                              C              D (ปันผล/หุ้น)</span><br>
-          <span style="color:#94a3b8">1    Ticker  ราคาปัจจุบัน ($)              Yield%         DPS/ปี ($)</span><br>
-          <span style="color:#10b981">2    JEPI    =GOOGLEFINANCE("JEPI","price")  =D2/B2*100     0.56</span><br>
-          <span style="color:#10b981">3    SCHD    =GOOGLEFINANCE("SCHD","price")  =D3/B3*100     2.72</span><br>
-          <span style="color:#10b981">4    VNQ     =GOOGLEFINANCE("VNQ","price")   =D4/B4*100     3.42</span><br>
-          <span style="color:#10b981">5    VOO     =GOOGLEFINANCE("VOO","price")   =D5/B5*100     7.44</span><br>
-          <span style="color:#64748b">   ↑ กรอก Ticker    ↑ สูตรอัตโนมัติ          ↑ คำนวณเอง    ↑ กรอกปีละครั้ง</span>
-        </div>
-        <div style="margin-top:.75rem;background:#1e1b4b;border:1px solid #3730a3;border-radius:8px;padding:.75rem;font-size:12px;color:#a5b4fc">
-          💡 คอลัมน์ C (Yield%) ใน Sheet Portfolio ให้อ้างอิงจาก PriceData:<br>
-          <span style="font-family:monospace;color:#c7d2fe">C7 = =PriceData!C2 &nbsp;&nbsp; C8 = =PriceData!C3 &nbsp;&nbsp; C9 = =PriceData!C4 &nbsp;&nbsp; C10 = =PriceData!C5</span>
-        </div>
-      </div>
-
-      <!-- STEP 3: APPS SCRIPT -->
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
-          <div style="width:28px;height:28px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;color:white">3</div>
-          <div>
-            <div style="font-weight:600;font-size:14px">Apps Script — ส่งข้อมูลเข้าแอป</div>
-            <div style="font-size:12px;color:#64748b">Extensions → Apps Script → วางโค้ด → Deploy → New Deployment</div>
-          </div>
-        </div>
-        <div style="position:relative">
-          <pre id="script-code" style="background:#0d1117;border:1px solid #1e293b;border-radius:8px;padding:1rem;font-size:11.5px;color:#e2e8f0;font-family:monospace;line-height:1.7;overflow-x:auto">function doGet() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Portfolio');
-
-  const capital  = sheet.getRange('B2').getValue();
-  const target   = sheet.getRange('B3').getValue();
-  const fxRate   = sheet.getRange('B4').getValue();
-
-  const assets = [];
-  for (let row = 7; row <= 11; row++) {
-    const name   = sheet.getRange('A' + row).getValue();
-    const alloc  = sheet.getRange('B' + row).getValue();
-    const yield_ = sheet.getRange('C' + row).getValue();
-    const tax    = sheet.getRange('D' + row).getValue();
-    const ticker = sheet.getRange('E' + row).getValue();
-    if (name) assets.push({ name, alloc, yield: yield_, tax, ticker });
-  }
-
-  const payload = {
-    capital,
-    target,
-    fxRate,
-    assets,
-    updatedAt: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })
-  };
-
-  return ContentService
-    .createTextOutput(JSON.stringify(payload))
-    .setMimeType(ContentService.MimeType.JSON);
-}</pre>
-          <button id="copy-btn" onclick="copyScript()"
-            style="position:absolute;top:.75rem;right:.75rem;background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer">
-            คัดลอก
-          </button>
-        </div>
-      </div>
-
-      <!-- STEP 4: CONNECT -->
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem">
-          <div style="width:28px;height:28px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;color:white">4</div>
-          <div>
-            <div style="font-weight:600;font-size:14px">วาง URL แล้วเชื่อมต่อ</div>
-            <div style="font-size:12px;color:#64748b">Deploy → Web App → Execute as Me → Anyone → คัดลอก URL</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem">
-          <input id="api-url-input2" type="text" placeholder="https://script.google.com/macros/s/YOUR_ID/exec"
-            style="flex:1;min-width:200px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 10px;font-size:12px;outline:none">
-          <button onclick="saveApiUrl2()" style="background:#6366f1;color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;font-weight:500">เชื่อมต่อ</button>
-        </div>
-        <div style="background:#1e293b;border-radius:8px;padding:.75rem">
-          <div style="font-size:12px;color:#64748b;margin-bottom:3px">สถานะ</div>
-          <div id="conn-status" style="font-size:13px;font-weight:500;color:#64748b">ยังไม่ได้เชื่อมต่อ</div>
-        </div>
-      </div>
-
-      <!-- DPS REFERENCE -->
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:1.25rem">
-        <div style="font-weight:600;font-size:14px;margin-bottom:.875rem">ตารางอ้างอิง DPS (เงินปันผล/หุ้น/ปี) — อัปเดต 2024</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead><tr style="color:#64748b;border-bottom:1px solid #1e293b">
-            <th style="text-align:left;padding:6px 0;font-weight:500">Ticker</th>
-            <th style="text-align:left;padding:6px 0;font-weight:500">ชื่อ</th>
-            <th style="text-align:right;padding:6px 0;font-weight:500">ราคา~</th>
-            <th style="text-align:right;padding:6px 0;font-weight:500">DPS/ปี ($)</th>
-            <th style="text-align:right;padding:6px 0;font-weight:500">ภาษี</th>
-            <th style="text-align:right;padding:6px 0;font-weight:500">Net Yield~</th>
-          </tr></thead>
-          <tbody>
-            <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#6366f1;font-weight:600">JEPI</td><td style="padding:8px 0;color:#94a3b8">JPMorgan Equity Premium</td><td style="text-align:right;padding:8px 0">$59</td><td style="text-align:right;padding:8px 0">$5.30</td><td style="text-align:right;padding:8px 0;color:#f59e0b">30%</td><td style="text-align:right;padding:8px 0;color:#10b981">~6.3%</td></tr>
-            <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#6366f1;font-weight:600">SCHD</td><td style="padding:8px 0;color:#94a3b8">Schwab US Dividend Equity</td><td style="text-align:right;padding:8px 0">$79</td><td style="text-align:right;padding:8px 0">$2.72</td><td style="text-align:right;padding:8px 0;color:#10b981">15%</td><td style="text-align:right;padding:8px 0;color:#10b981">~2.9%</td></tr>
-            <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#6366f1;font-weight:600">VYM</td><td style="padding:8px 0;color:#94a3b8">Vanguard High Dividend Yield</td><td style="text-align:right;padding:8px 0">$128</td><td style="text-align:right;padding:8px 0">$4.18</td><td style="text-align:right;padding:8px 0;color:#10b981">15%</td><td style="text-align:right;padding:8px 0;color:#10b981">~2.8%</td></tr>
-            <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#6366f1;font-weight:600">VNQ</td><td style="padding:8px 0;color:#94a3b8">Vanguard Real Estate ETF</td><td style="text-align:right;padding:8px 0">$86</td><td style="text-align:right;padding:8px 0">$3.42</td><td style="text-align:right;padding:8px 0;color:#f59e0b">30%</td><td style="text-align:right;padding:8px 0;color:#10b981">~2.8%</td></tr>
-            <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#6366f1;font-weight:600">O</td><td style="padding:8px 0;color:#94a3b8">Realty Income (Monthly!)</td><td style="text-align:right;padding:8px 0">$56</td><td style="text-align:right;padding:8px 0">$3.08</td><td style="text-align:right;padding:8px 0;color:#f59e0b">30%</td><td style="text-align:right;padding:8px 0;color:#10b981">~3.9%</td></tr>
-            <tr style="border-bottom:1px solid #1e293b"><td style="padding:8px 0;color:#6366f1;font-weight:600">VOO</td><td style="padding:8px 0;color:#94a3b8">Vanguard S&P 500</td><td style="text-align:right;padding:8px 0">$535</td><td style="text-align:right;padding:8px 0">$7.44</td><td style="text-align:right;padding:8px 0;color:#10b981">15%</td><td style="text-align:right;padding:8px 0;color:#10b981">~1.2%</td></tr>
-            <tr><td style="padding:8px 0;color:#6366f1;font-weight:600">KO</td><td style="padding:8px 0;color:#94a3b8">Coca-Cola</td><td style="text-align:right;padding:8px 0">$63</td><td style="text-align:right;padding:8px 0">$1.94</td><td style="text-align:right;padding:8px 0;color:#10b981">15%</td><td style="text-align:right;padding:8px 0;color:#10b981">~2.6%</td></tr>
-          </tbody>
-        </table>
-        <div style="margin-top:.75rem;font-size:11px;color:#475569">* DPS และ Net Yield เป็นค่าประมาณ อัปเดตคอลัมน์ D ใน PriceData ทุกครั้งที่มีการประกาศปันผลใหม่</div>
-      </div>
-
     </div>
   </div>
 
 </main>
 
 <script>
-const CAP_DEFAULT = 600000;
-const TGT = 10000;
+const COLORS = ['#6366f1','#10b981','#f59e0b','#38bdf8','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6','#e879f9','#4ade80'];
 
-// DPS lookup table (USD/year) — อัปเดตปีละครั้ง
 const DPS_TABLE = {
-  QQQI:7.60, JEPI:4.69, QYLD:2.16, JEPQ:4.20,
-  SCHD:1.05, VYM:4.18, DVY:3.80, HDV:4.10,
-  VNQ:3.49,  O:3.24,   STAG:1.47, REIT:1.20,
-  VOO:7.13,  SPY:6.90, QQQ:2.81,  QQQM:1.27,
-  KO:2.12,   JNJ:5.20, PG:4.03,   T:1.11,
-  NVDA:0.04, AMD:0,    MU:0.46,   GOOGL:0.80,
-  MSFT:3.32, AAPL:1.00,TSLA:0,    META:2.00,
-  AMZN:0,    NFLX:0,   INTC:0.50, IBM:6.68,
+  QQQI:7.60, JEPI:4.69, QYLD:2.16, JEPQ:4.20, QQQM:1.27,
+  SCHD:1.05, VYM:4.18, DVY:3.80, HDV:4.10, VIG:1.80,
+  VNQ:3.49,  O:3.24,   STAG:1.47, AMT:6.48,
+  VOO:7.13,  SPY:6.90, QQQ:2.81,  IVV:7.00,
+  KO:2.12,   JNJ:5.20, PG:4.03,   T:1.11, MO:3.92,
+  NVDA:0.04, AMD:0,    MU:0.46,   GOOGL:0.80, GOOG:0.80,
+  MSFT:3.32, AAPL:1.00,TSLA:0,    META:2.00, AMZN:0,
+  NFLX:0,    INTC:0.50,IBM:6.68,  MMM:5.92, XOM:3.80,
 };
+const STOCK_INFO = {
+  QQQI: {name:'NEOS NASDAQ-100 High Income ETF', tax:30, freq:'รายเดือน'},
+  JEPI: {name:'JPMorgan Equity Premium Income', tax:30, freq:'รายเดือน'},
+  QYLD: {name:'Global X NASDAQ-100 Covered Call', tax:30, freq:'รายเดือน'},
+  JEPQ: {name:'JPMorgan NASDAQ Equity Premium', tax:30, freq:'รายเดือน'},
+  SCHD: {name:'Schwab US Dividend Equity ETF', tax:15, freq:'รายไตรมาส'},
+  VYM:  {name:'Vanguard High Dividend Yield', tax:15, freq:'รายไตรมาส'},
+  VNQ:  {name:'Vanguard Real Estate ETF', tax:30, freq:'รายไตรมาส'},
+  O:    {name:'Realty Income Corp', tax:30, freq:'รายเดือน'},
+  STAG: {name:'STAG Industrial REIT', tax:30, freq:'รายเดือน'},
+  VOO:  {name:'Vanguard S&P 500 ETF', tax:15, freq:'รายไตรมาส'},
+  QQQ:  {name:'Invesco QQQ Trust', tax:15, freq:'รายไตรมาส'},
+  QQQM: {name:'Invesco NASDAQ-100 ETF (Mini)', tax:15, freq:'รายไตรมาส'},
+  KO:   {name:'Coca-Cola Company', tax:15, freq:'รายไตรมาส'},
+  JNJ:  {name:'Johnson & Johnson', tax:15, freq:'รายไตรมาส'},
+  MSFT: {name:'Microsoft Corporation', tax:15, freq:'รายไตรมาส'},
+  AAPL: {name:'Apple Inc.', tax:15, freq:'รายไตรมาส'},
+  NVDA: {name:'NVIDIA Corporation', tax:15, freq:'รายไตรมาส'},
+  AMD:  {name:'Advanced Micro Devices', tax:15, freq:'—'},
+  MU:   {name:'Micron Technology', tax:15, freq:'รายไตรมาส'},
+  GOOGL:{name:'Alphabet Inc.', tax:15, freq:'รายไตรมาส'},
+  META: {name:'Meta Platforms', tax:15, freq:'รายไตรมาส'},
+  TSLA: {name:'Tesla Inc.', tax:15, freq:'—'},
+  AMZN: {name:'Amazon.com Inc.', tax:15, freq:'—'},
+  T:    {name:'AT&T Inc.', tax:15, freq:'รายไตรมาส'},
+  XOM:  {name:'ExxonMobil Corp.', tax:15, freq:'รายไตรมาส'},
+};
+const TAX_INFO = [
+  {name:'Covered Call ETF',  ex:'QQQI, JEPI, QYLD', yMin:8, yMax:12, tax:30, color:'#6366f1'},
+  {name:'US REIT ETF',       ex:'VNQ, O, STAG',      yMin:3, yMax:6,  tax:30, color:'#f59e0b'},
+  {name:'Dividend ETF',      ex:'SCHD, VYM, VIG',    yMin:2, yMax:4,  tax:15, color:'#10b981'},
+  {name:'Dividend Stocks',   ex:'KO, JNJ, T, XOM',   yMin:2, yMax:5,  tax:15, color:'#f87171'},
+  {name:'Growth ETF',        ex:'VOO, QQQ, SPY',     yMin:1, yMax:2,  tax:15, color:'#38bdf8'},
+  {name:'Capital Gain',      ex:'ทุก US Stocks',     yMin:0, yMax:999,tax:0,  color:'#94a3b8'},
+];
 
 const ASSETS_DEF = [
-  {name:'QQQI',  desc:'Covered Call ETF',  tax:30, color:'#6366f1', freq:'รายเดือน'},
-  {name:'NVDA',  desc:'Growth Stock',       tax:15, color:'#10b981', freq:'รายไตรมาส'},
-  {name:'AMD',   desc:'Growth Stock',       tax:15, color:'#f59e0b', freq:'—'},
-  {name:'MU',    desc:'Growth Stock',       tax:15, color:'#38bdf8', freq:'รายไตรมาส'},
-  {name:'GOOGL', desc:'Growth Stock',       tax:15, color:'#f87171', freq:'รายไตรมาส'},
+  {name:'QQQI', desc:'Covered Call ETF', tax:30, color:'#6366f1', freq:'รายเดือน'},
+  {name:'NVDA', desc:'Growth Stock',     tax:15, color:'#10b981', freq:'รายไตรมาส'},
+  {name:'AMD',  desc:'Growth Stock',     tax:15, color:'#f59e0b', freq:'—'},
+  {name:'MU',   desc:'Growth Stock',     tax:15, color:'#38bdf8', freq:'รายไตรมาส'},
+  {name:'GOOGL',desc:'Growth Stock',     tax:15, color:'#f87171', freq:'รายไตรมาส'},
 ];
-const PRESETS = [
-  {name:'All-in QQQI', label:'100% Income',    risk:'hi',  roi:'~6.7% net',
-   desc:'QQQI 100% รายได้ปันผลรายเดือนสูงสุด',
-   alloc:[100,0,0,0,0], yields:[9.5,0,0,0,0]},
-  {name:'QQQI + MU',   label:'Income + Semi',   risk:'hi',  roi:'~5.0% net',
-   desc:'QQQI 50% + MU 50%',
-   alloc:[50,0,0,50,0], yields:[9.5,0,0,0.5,0]},
-  {name:'Balanced',    label:'Diversified',     risk:'mid', roi:'~4.7% net',
-   desc:'QQQI 70% + กระจาย Tech',
-   alloc:[70,10,0,10,10], yields:[9.5,0.03,0,0.5,0.5]},
-];
-const TAX_INFO = [
-  {name:'Covered Call ETF',  ex:'JEPI, QYLD',    yMin:8,  yMax:12, tax:30, color:'#6366f1'},
-  {name:'US REIT ETF',       ex:'VNQ, O',         yMin:3,  yMax:6,  tax:30, color:'#f59e0b'},
-  {name:'Dividend ETF',      ex:'SCHD, VYM',      yMin:3,  yMax:4,  tax:15, color:'#10b981'},
-  {name:'High-Div Stocks',   ex:'KO, JNJ, T',     yMin:3,  yMax:5,  tax:15, color:'#f87171'},
-  {name:'Growth ETF',        ex:'VOO, QQQ',        yMin:1,  yMax:2,  tax:15, color:'#38bdf8'},
-  {name:'Capital Gain',      ex:'ทุก US Stocks',   yMin:0,  yMax:999,tax:0,  color:'#94a3b8'},
+const PRESETS_DEFAULT = [
+  {name:'All-in QQQI', label:'100% Income',   risk:'hi',
+   stocks:[{name:'QQQI',alloc:100,yld:9.5,tax:30,freq:'รายเดือน',desc:'Covered Call ETF'}]},
+  {name:'QQQI + MU',   label:'Income + Semi', risk:'hi',
+   stocks:[{name:'QQQI',alloc:50,yld:9.5,tax:30,freq:'รายเดือน',desc:'Covered Call ETF'},{name:'MU',alloc:50,yld:0.5,tax:15,freq:'รายไตรมาส',desc:'Growth Stock'}]},
+  {name:'Balanced',    label:'Diversified',   risk:'mid',
+   stocks:[{name:'QQQI',alloc:70,yld:9.5,tax:30,freq:'รายเดือน',desc:'Covered Call ETF'},{name:'NVDA',alloc:10,yld:0.03,tax:15,freq:'รายไตรมาส',desc:'Growth Stock'},{name:'MU',alloc:10,yld:0.5,tax:15,freq:'รายไตรมาส',desc:'Growth Stock'},{name:'GOOGL',alloc:10,yld:0.5,tax:15,freq:'รายไตรมาส',desc:'Growth Stock'}]},
 ];
 
 let S = {
-  capital: CAP_DEFAULT,
-  assets: JSON.parse(JSON.stringify(ASSETS_DEF)),
-  alloc:  [...PRESETS[1].alloc],
-  yields: [...PRESETS[1].yields],
-  preset: 1,
+  capital: 600000,
+  target:  10000,
+  assets:  JSON.parse(JSON.stringify(ASSETS_DEF)),
+  alloc:   [50,0,0,50,0],
+  yields:  [9.5,0,0,0.5,0],
+  preset:  1,
 };
-let chartInst = null;
-let apiUrl = localStorage.getItem('us_portfolio_api_url') || '';
-let fhInterval = null;
+let chartInst=null, fhInterval=null;
+let calcRows=[];
 
+// ===== HELPERS =====
+const g = id => document.getElementById(id);
+const fmt = n => isFinite(n) ? Math.round(n).toLocaleString() : '0';
+const fmtD = (n,d=2) => (+n).toFixed(d);
+const setText = (id,v) => { const el=g(id); if(el) el.textContent=v; };
+
+// ===== INIT =====
 window.addEventListener('DOMContentLoaded', () => {
-  if (apiUrl) {
-    document.getElementById('setup-banner').style.display='none';
-    document.getElementById('api-url-input').value = apiUrl;
-    document.getElementById('api-url-input2').value = apiUrl;
-    fetchSheetData();
-  }
   const savedKey=localStorage.getItem('fh_key');
   if(savedKey) g('fh-key').value=savedKey;
   renderTaxTable();
+  renderRefTable();
   renderPresets();
   renderRows();
   initChart();
   update();
-  calcCap();
+  calcCapNeeded();
 });
 
 function switchTab(tab, btn) {
-  ['sim','tax','cap','sheet'].forEach(t => document.getElementById('tab-'+t).classList.toggle('show', t===tab));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  ['sim','cap','tax'].forEach(t=>g('tab-'+t).classList.toggle('show',t===tab));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
 
-// ===== API =====
-function saveApiUrl() {
-  const url = document.getElementById('api-url-input').value.trim(); if(!url) return;
-  apiUrl=url; localStorage.setItem('us_portfolio_api_url',url);
-  document.getElementById('setup-banner').style.display='none';
-  document.getElementById('api-url-input2').value=url;
-  fetchSheetData();
+// ===== SETTINGS =====
+function onCapitalChange() {
+  const v=parseInt(g('capital-input').value)||0;
+  if(v>=1000){S.capital=v;setText('hdr-capital','฿'+fmt(v));update();}
 }
-function saveApiUrl2() {
-  const url = document.getElementById('api-url-input2').value.trim(); if(!url) return;
-  apiUrl=url; localStorage.setItem('us_portfolio_api_url',url);
-  document.getElementById('api-url-input').value=url;
-  document.getElementById('setup-banner').style.display='none';
-  fetchSheetData();
-}
-async function fetchSheetData() {
-  if(!apiUrl) return;
-  const btn=document.getElementById('refresh-btn'); btn.textContent='⟳ กำลังโหลด...'; btn.disabled=true;
-  const st=document.getElementById('conn-status'); if(st) st.textContent='กำลังเชื่อมต่อ...';
-  try {
-    const res=await fetch(apiUrl); if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    applySheetData(data);
-    if(st){st.textContent='เชื่อมต่อสำเร็จ ✓  '+( data.updatedAt||'');st.style.color='#10b981';}
-  } catch(e) {
-    if(st){st.textContent='เชื่อมต่อไม่ได้: '+e.message;st.style.color='#f87171';}
-  } finally { btn.textContent='↻ รีเฟรช'; btn.disabled=false; }
-}
-function applySheetData(data) {
-  if(data.capital) S.capital=data.capital;
-  if(data.fxRate)  document.getElementById('fx-rate').value=data.fxRate;
-  if(data.assets && data.assets.length) {
-    S.assets = data.assets.map((a,i)=>({name:a.name||a.ticker||'Asset '+(i+1),desc:a.desc||'',tax:a.tax||15,color:ASSETS_DEF[i]?.color||'#6366f1'}));
-    S.alloc  = data.assets.map(a=>+(a.alloc)||0);
-    S.yields = data.assets.map(a=>+(a.yield)||0);
-  }
-  setText('hdr-capital','฿'+fmt(S.capital));
-  document.getElementById('live-badge').style.display='inline-flex';
-  document.getElementById('live-panel').style.display='block';
-  const lu=document.getElementById('last-updated'); if(lu&&data.updatedAt) lu.textContent='อัปเดต: '+data.updatedAt;
-  document.getElementById('live-assets').innerHTML = S.assets.map((a,i)=>`
-    <div style="background:#1e293b;border-radius:8px;padding:.625rem .875rem">
-      <div style="font-size:11px;color:#64748b;margin-bottom:2px">${a.name}</div>
-      <div style="font-weight:700;font-size:17px;color:${a.color}">${S.alloc[i]}%</div>
-      <div style="font-size:12px;color:#94a3b8">${S.yields[i]}%/ปี | ภาษี ${a.tax}%</div>
-    </div>`).join('');
-  S.preset=-1; renderPresets(); renderRows(); update();
+function onTargetChange() {
+  const v=parseInt(g('target-input').value)||0;
+  if(v>=100){S.target=v;setText('hdr-target','฿'+fmt(v));update();}
 }
 
-// ===== PRESETS =====
+// ===== PRESETS (unified, max 4, all deletable) =====
+const MAX_PRESETS = 4;
+function loadPresets() {
+  const saved = localStorage.getItem('presets_v2');
+  if(saved) return JSON.parse(saved);
+  return JSON.parse(JSON.stringify(PRESETS_DEFAULT));
+}
+function savePresets(arr) { localStorage.setItem('presets_v2', JSON.stringify(arr)); }
+let presets = loadPresets();
+
+function calcPresetRoi(p) {
+  let gross=0, taxAmt=0;
+  (p.stocks||[]).forEach(s=>{
+    const g2=(s.alloc/100)*(s.yld||0)/100;
+    taxAmt+=g2*(s.tax||15)/100; gross+=g2;
+  });
+  const net=(gross-taxAmt)*100;
+  return net>0?'~'+net.toFixed(1)+'% net':'—';
+}
+
 function renderPresets() {
   const rc={low:'#10b981',mid:'#f59e0b',hi:'#f87171'};
   const rl={low:'ต่ำ',mid:'ปานกลาง',hi:'สูง'};
-  document.getElementById('preset-cards').innerHTML = PRESETS.map((p,i)=>`
-    <div class="strategy-card${S.preset===i?' sel':''}" onclick="selectPreset(${i})"
-         style="background:#0f172a;border-radius:10px;padding:.875rem">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-        <div><div style="font-weight:600;font-size:14px">${p.name}</div><div style="font-size:11px;color:#64748b">${p.label}</div></div>
-        <span style="font-size:11px;color:${rc[p.risk]};background:#1e293b;padding:2px 8px;border-radius:20px">${rl[p.risk]}</span>
+  const canAdd = presets.length < MAX_PRESETS;
+  // update save button state
+  const saveBtn=document.querySelector('[onclick="openSavePreset()"]');
+  if(saveBtn){
+    if(canAdd){
+      saveBtn.disabled=false;
+      saveBtn.style.opacity='1';
+      saveBtn.title='บันทึกพอร์ตปัจจุบันเป็น Preset';
+    } else {
+      saveBtn.disabled=true;
+      saveBtn.style.opacity='.4';
+      saveBtn.title='เต็มแล้ว (4/4) — ลบ Preset เก่าก่อน';
+    }
+  }
+  g('preset-cards').innerHTML = presets.map((p,i)=>`
+    <div class="preset-card${S.preset===i?' sel':''}" onclick="selectPreset(${i})" style="position:relative">
+      <div style="position:absolute;top:7px;right:7px;display:flex;gap:2px">
+        <button onclick="event.stopPropagation();editPreset(${i})"
+          style="background:none;border:none;color:#334155;font-size:12px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1"
+          onmouseover="this.style.color='#818cf8'" onmouseout="this.style.color='#334155'" title="แก้ไข Preset นี้">✏️</button>
+        <button onclick="event.stopPropagation();deletePreset(${i})"
+          style="background:none;border:none;color:#334155;font-size:12px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1"
+          onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#334155'" title="ลบ Preset นี้">✕</button>
       </div>
-      <div style="font-size:12px;color:#64748b;margin-bottom:8px">${p.desc}</div>
-      <div style="font-size:11px;display:flex;flex-direction:column;gap:2px">
-        ${p.alloc.map((a,j)=>a>0?`<div style="display:flex;justify-content:space-between"><span style="color:#64748b">${ASSETS_DEF[j].name}</span><span style="font-weight:500">${a}%</span></div>`:'').join('')}
+      <div style="padding-right:44px;margin-bottom:5px">
+        <div style="font-weight:600;font-size:13px">${p.name}</div>
+        <div style="font-size:11px;color:#64748b">${p.label||''}</div>
       </div>
-      <div style="margin-top:8px;padding-top:6px;border-top:1px solid #1e293b;font-size:12px;font-weight:500;color:#6366f1">${p.roi}</div>
-    </div>`).join('');
+      <span class="badge" style="background:#1e293b;color:${rc[p.risk||'mid']};border:none;font-size:10px;margin-bottom:7px;display:inline-flex">${rl[p.risk||'mid']}</span>
+      ${(p.stocks||[]).filter(s=>s.alloc>0).map(s=>`
+        <div style="display:flex;justify-content:space-between;font-size:11px">
+          <span style="color:#64748b">${s.name}</span>
+          <span style="font-weight:600">${s.alloc}%</span>
+        </div>`).join('')}
+      <div style="margin-top:6px;padding-top:5px;border-top:1px solid #1e293b;font-size:11px;font-weight:600;color:#6366f1">${p.roi||calcPresetRoi(p)}</div>
+    </div>`).join('')
+  + (canAdd ? `
+    <div class="preset-card" onclick="openSavePreset()"
+      style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:100px;color:#334155;cursor:pointer"
+      onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'"
+      onmouseout="this.style.borderColor='#1e293b';this.style.color='#334155'">
+      <span style="font-size:22px">+</span>
+      <span style="font-size:12px;font-weight:500">บันทึก Preset ใหม่</span>
+      <span style="font-size:10px;color:#475569">${presets.length}/${MAX_PRESETS}</span>
+    </div>` : '');
 }
+
 function selectPreset(i) {
-  S.preset=i; S.alloc=[...PRESETS[i].alloc]; S.yields=[...PRESETS[i].yields];
-  S.assets=JSON.parse(JSON.stringify(ASSETS_DEF)); S.capital=CAP_DEFAULT;
+  const p = presets[i];
+  if(!p) return;
+  S.preset = i;
+  S.assets = (p.stocks||[]).map((s,j)=>({
+    name:s.name,
+    desc:s.desc||STOCK_INFO[s.name]?.name||'',
+    tax:s.tax||15,
+    color:COLORS[j%COLORS.length],
+    freq:s.freq||STOCK_INFO[s.name]?.freq||'—'
+  }));
+  S.alloc  = (p.stocks||[]).map(s=>s.alloc||0);
+  S.yields = (p.stocks||[]).map(s=>s.yld||0);
+  S.capital = p.capital||600000;
+  g('capital-input').value = S.capital;
+  setText('hdr-capital','฿'+fmt(S.capital));
   renderPresets(); renderRows(); update();
 }
 
-// ===== ROWS =====
+function deletePreset(i) {
+  if(!confirm(`ลบ Preset "${presets[i]?.name}" ออก?`)) return;
+  presets.splice(i,1);
+  savePresets(presets);
+  if(S.preset===i) S.preset=-1;
+  else if(S.preset>i) S.preset--;
+  renderPresets();
+}
+
+function openSavePreset() {
+  if(presets.length>=MAX_PRESETS) return;
+  const modal=g('save-preset-modal');
+  modal.style.display=modal.style.display==='none'?'block':'none';
+  if(modal.style.display==='block'){
+    const lines=S.assets.filter((_,i)=>S.alloc[i]>0)
+      .map((a,_,arr)=>{const i=S.assets.indexOf(a);return `${a.name} ${S.alloc[i]}%`;}).join(' · ');
+    g('sp-preview').textContent='พอร์ต: '+lines;
+    g('sp-name').focus();
+  }
+}
+
+function saveCurrentAsPreset() {
+  if(presets.length>=MAX_PRESETS) return;
+  const name=(g('sp-name').value||'').trim();
+  if(!name){g('sp-name').focus();return;}
+  const risk=g('sp-risk').value;
+  const m=calcMetrics();
+  const roi='~'+((m.net/Math.max(S.capital,1))*100).toFixed(1)+'% net';
+  const stocks=S.assets.map((a,i)=>({
+    name:a.name, alloc:S.alloc[i], yld:S.yields[i],
+    tax:a.tax, freq:a.freq, desc:a.desc
+  }));
+  presets.push({name, label:'Custom', risk, stocks, capital:S.capital, roi});
+  savePresets(presets);
+  g('save-preset-modal').style.display='none';
+  g('sp-name').value='';
+  S.preset=presets.length-1;
+  renderPresets();
+}
+
+// ===== EDIT PRESET =====
+let editingPresetIdx = -1;
+
+function editPreset(i) {
+  editingPresetIdx = i;
+  // load this preset into the sliders (same as selectPreset but keep banner)
+  selectPreset(i);
+  // show edit banner
+  const banner = g('edit-banner');
+  banner.style.display = 'flex';
+  setText('edit-name', presets[i].name);
+  // scroll to sliders
+  g('asset-rows').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function saveEditPreset() {
+  if(editingPresetIdx<0) return;
+  const p = presets[editingPresetIdx];
+  const m = calcMetrics();
+  const roi = '~'+((m.net/Math.max(S.capital,1))*100).toFixed(1)+'% net';
+  presets[editingPresetIdx] = {
+    ...p,
+    stocks: S.assets.map((a,i)=>({
+      name:a.name, alloc:S.alloc[i], yld:S.yields[i],
+      tax:a.tax, freq:a.freq, desc:a.desc
+    })),
+    capital: S.capital,
+    roi
+  };
+  savePresets(presets);
+  S.preset = editingPresetIdx;
+  editingPresetIdx = -1;
+  g('edit-banner').style.display = 'none';
+  renderPresets();
+}
+
+function cancelEditPreset() {
+  if(editingPresetIdx>=0) selectPreset(editingPresetIdx); // restore original
+  editingPresetIdx = -1;
+  g('edit-banner').style.display = 'none';
+  renderPresets();
+}
+
+// ===== ASSET ROWS =====
 function renderRows() {
-  const colors=['#6366f1','#10b981','#f59e0b','#38bdf8','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
-  document.getElementById('asset-rows').innerHTML = S.assets.map((a,i)=>`
-    <div style="margin-bottom:${i<S.assets.length-1?'1rem':'0'}">
+  g('asset-rows').innerHTML=S.assets.map((a,i)=>`
+    <div style="margin-bottom:${i<S.assets.length-1?'.875rem':'0'}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <div style="display:flex;align-items:center;gap:7px">
-          <span style="width:10px;height:10px;border-radius:50%;background:${a.color||colors[i%colors.length]};display:inline-block;flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:600">${a.name}</span>
-          <span style="font-size:10px;color:#64748b">${a.desc||''} · ภาษี ${a.tax}%</span>
-        </div>
         <div style="display:flex;align-items:center;gap:6px">
-          <div style="text-align:right">
-            <span style="font-size:13px;font-weight:600" id="ap-${i}">${S.alloc[i]}%</span>
-            <span style="font-size:11px;color:#64748b;margin-left:5px" id="av-${i}">฿${fmt(S.capital*S.alloc[i]/100)}</span>
-          </div>
-          <button onclick="removeAsset(${i})" title="ลบ"
-            style="background:none;border:none;color:#475569;font-size:14px;cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px"
-            onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#475569'">✕</button>
+          <span style="width:9px;height:9px;border-radius:50%;background:${a.color||COLORS[i%COLORS.length]};display:inline-block;flex-shrink:0"></span>
+          <span style="font-size:13px;font-weight:600">${a.name}</span>
+          <span style="font-size:10px;color:#475569">${a.desc||''} · ${a.tax}%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:13px;font-weight:600" id="ap-${i}">${S.alloc[i]}%</span>
+          <span style="font-size:11px;color:#475569" id="av-${i}">฿${fmt(S.capital*S.alloc[i]/100)}</span>
+          <button onclick="removeAsset(${i})" style="background:none;border:none;color:#334155;font-size:13px;cursor:pointer;padding:1px 4px;line-height:1;border-radius:4px" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#334155'">✕</button>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:6px">
         <input type="range" min="0" max="100" step="1" value="${S.alloc[i]}" id="sl-${i}"
-          style="flex:1;accent-color:${a.color||colors[i%colors.length]}" oninput="onSlide(${i},+this.value)">
-        <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-          <input type="number" min="0" max="50" step="0.5" value="${S.yields[i]}" id="yl-${i}"
+          style="flex:1;accent-color:${a.color||COLORS[i%COLORS.length]}" oninput="onSlide(${i},+this.value)">
+        <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
+          <input type="number" min="0" max="50" step="0.1" value="${S.yields[i]}" id="yl-${i}"
             oninput="onYield(${i},+this.value)"
-            style="width:52px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:3px 6px;font-size:12px;text-align:right;outline:none">
-          <span style="font-size:10px;color:#64748b">%</span>
+            style="width:50px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:3px 5px;font-size:12px;text-align:right;outline:none">
+          <span style="font-size:10px;color:#475569">%</span>
         </div>
       </div>
     </div>`).join('');
 }
+function updateRow(i) {
+  const v=S.alloc[i];
+  const sl=g('sl-'+i); if(sl) sl.value=v;
+  const ap=g('ap-'+i); if(ap) ap.textContent=v+'%';
+  const av=g('av-'+i); if(av) av.textContent='฿'+fmt(S.capital*v/100);
+}
+function onSlide(ci,nv) {
+  const ov=S.alloc[ci]; if(nv===ov) return;
+  S.alloc[ci]=nv;
+  const n=S.assets.length;
+  const others=[...Array(n).keys()].filter(i=>i!==ci);
+  const sumO=others.reduce((s,i)=>s+S.alloc[i],0);
+  const rem=100-nv;
+  if(rem<0){S.alloc[ci]=100;others.forEach(i=>S.alloc[i]=0);}
+  else if(sumO>0){
+    others.forEach(i=>S.alloc[i]=Math.round(S.alloc[i]/sumO*rem));
+    const tot=S.alloc.reduce((s,v)=>s+v,0);
+    const diff=100-tot;
+    if(diff!==0){const big=others.reduce((a,b)=>S.alloc[a]>=S.alloc[b]?a:b);S.alloc[big]=Math.max(0,S.alloc[big]+diff);}
+  }
+  [...Array(n).keys()].forEach(i=>updateRow(i));
+  const tot=S.alloc.reduce((s,v)=>s+v,0);
+  const tp=g('total-pct'); tp.textContent=tot+'%'; tp.style.color=tot===100?'#6366f1':'#f59e0b';
+  S.preset=-1; renderPresets(); update();
+}
+function onYield(i,v){S.yields[i]=v;update();}
 function removeAsset(i) {
   if(S.assets.length<=1) return;
   const removed=S.alloc[i];
   S.assets.splice(i,1); S.alloc.splice(i,1); S.yields.splice(i,1);
-  const rem=S.alloc.reduce((s,v)=>s+v,0);
-  if(rem>0 && removed>0) {
-    const extra=100-rem;
+  if(removed>0){
     const biggest=S.alloc.indexOf(Math.max(...S.alloc));
-    S.alloc[biggest]=Math.max(0,S.alloc[biggest]+extra);
+    if(biggest>=0) S.alloc[biggest]=Math.max(0,S.alloc[biggest]+removed);
   }
   S.preset=-1; renderPresets(); renderRows(); update();
 }
 function toggleAddForm(show) {
-  const form=document.getElementById('add-form');
-  const btn=document.getElementById('btn-add-stock');
-  form.style.display=show?'block':'none';
-  btn.style.display=show?'none':'block';
-  if(show){ document.getElementById('new-ticker').value=''; document.getElementById('new-yield').value=''; }
+  g('add-form').style.display=show?'block':'none';
+  g('btn-add-stock').style.display=show?'none':'block';
+  if(show){g('new-ticker').value='';g('new-yield').value='';g('new-alloc').value='';g('new-ticker').focus();}
 }
 function confirmAdd() {
-  const colors=['#6366f1','#10b981','#f59e0b','#38bdf8','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
-  const ticker=(document.getElementById('new-ticker').value||'').trim().toUpperCase();
-  const yld=parseFloat(document.getElementById('new-yield').value)||0;
-  const tax=parseInt(document.getElementById('new-tax').value)||15;
-  let newAlloc=parseInt(document.getElementById('new-alloc').value)||0;
+  const ticker=(g('new-ticker').value||'').trim().toUpperCase();
+  const yld=parseFloat(g('new-yield').value)||0;
+  const tax=parseInt(g('new-tax').value)||15;
+  let newAlloc=parseInt(g('new-alloc').value)||0;
   if(!ticker) return;
-  // Reduce existing allocs proportionally to make room
-  if(newAlloc>0) {
+  const info=STOCK_INFO[ticker];
+  const color=COLORS[S.assets.length%COLORS.length];
+  const freq=info?.freq||(tax===30?'รายเดือน':'รายไตรมาส');
+  const desc=info?.name||'';
+  if(newAlloc>0){
     const total=S.alloc.reduce((s,v)=>s+v,0);
-    const excess=Math.min(newAlloc, total);
-    if(excess>0 && total>0) S.alloc=S.alloc.map(v=>Math.round(v*(total-excess)/total));
+    if(total>0) S.alloc=S.alloc.map(v=>Math.round(v*(100-newAlloc)/100));
     const actualTotal=S.alloc.reduce((s,v)=>s+v,0);
     newAlloc=100-actualTotal;
   }
-  const color=colors[S.assets.length%colors.length];
-  const freq=tax===30?'รายเดือน':'รายไตรมาส';
-  S.assets.push({name:ticker,desc:'',tax,color,freq});
+  S.assets.push({name:ticker,desc,tax,color,freq});
   S.alloc.push(Math.max(0,newAlloc)); S.yields.push(yld);
+  // Auto-fill yield from DPS if available (use placeholder price)
+  if(DPS_TABLE[ticker]!==undefined && yld===0 && DPS_TABLE[ticker]>0){
+    const idx=S.assets.length-1; S.yields[idx]=0; // will update when finnhub fetched
+  }
   S.preset=-1; toggleAddForm(false); renderPresets(); renderRows(); update();
 }
-function editCapital() {
-  const v=parseInt(document.getElementById('capital-input').value)||S.capital;
-  const input=document.getElementById('capital-input');
-  if(input) { S.capital=v; setText('hdr-capital','฿'+fmt(v)); update(); }
+
+// ===== CALC =====
+function calcMetrics() {
+  let gross=0,tax=0;
+  S.assets.forEach((a,i)=>{
+    const val=S.capital*S.alloc[i]/100;
+    const g2=val*S.yields[i]/100;
+    tax+=g2*a.tax/100; gross+=g2;
+  });
+  const net=gross-tax, mo=net/12, roi=S.capital>0?net/S.capital*100:0;
+  const needCap=roi>0?(S.target*12)/(roi/100):Infinity;
+  return{gross,tax,net,mo,roi,needCap};
 }
-function onCapitalChange() {
-  const v=parseInt(document.getElementById('capital-input').value)||0;
-  if(v>=1000) { S.capital=v; setText('hdr-capital','฿'+fmt(v)); update(); }
+function update() {
+  const m=calcMetrics();
+  const fx=+g('fx-rate').value||35;
+  setText('fx-usd','$'+fmt(S.capital/fx));
+  setText('m-gross','฿'+fmt(m.gross));
+  setText('m-tax','฿'+fmt(m.tax));
+  setText('m-net-yr','฿'+fmt(m.net));
+  const moEl=g('m-net-mo'); moEl.textContent='฿'+fmt(m.mo);
+  moEl.style.color=m.mo>=S.target?'#10b981':m.mo>=S.target*.6?'#f59e0b':'#f87171';
+  const pct=Math.min(100,m.mo/S.target*100);
+  g('gap-bar').style.width=pct+'%';
+  g('gap-bar').style.background=pct>=100?'#10b981':pct>=60?'#f59e0b':'#f87171';
+  setText('gap-pct-lbl',Math.round(pct)+'%');
+  setText('gap-actual','฿'+fmt(m.mo)+'/เดือน');
+  setText('gap-cur-roi',m.roi.toFixed(1)+'%');
+  const diff=m.mo-S.target; const diffEl=g('gap-diff');
+  if(diff>=0){diffEl.textContent='+฿'+fmt(diff)+' เกิน!';diffEl.style.color='#10b981';}
+  else{diffEl.textContent='-฿'+fmt(Math.abs(diff))+' ขาด';diffEl.style.color='#f87171';}
+  if(isFinite(m.needCap)){
+    setText('gap-need-cap','฿'+fmt(m.needCap));
+    setText('gap-need-usd','$'+fmt(m.needCap/fx));
+  } else {setText('gap-need-cap','N/A');setText('gap-need-usd','N/A');}
+  const al=g('gap-alert');
+  if(m.mo>=S.target){al.textContent='🎉 พอร์ตสร้างรายได้ ฿'+fmt(m.mo)+'/เดือน เกินเป้าหมายแล้ว!';al.style.cssText='background:#052e16;border:1px solid #166534;color:#34d399;padding:.75rem 1rem;border-radius:8px;font-size:13px;font-weight:500';}
+  else{al.textContent='ยังขาดเป้า ฿'+fmt(Math.abs(diff))+'/เดือน — ต้องเพิ่มทุนเป็น ฿'+fmt(Math.max(0,m.needCap))+' หรือปรับ strategy ที่ให้ yield สูงขึ้น';al.style.cssText='background:#1c1400;border:1px solid #854d0e;color:#fbbf24;padding:.75rem 1rem;border-radius:8px;font-size:13px;font-weight:500';}
+  updateChart(); updateLegend(); renderDividendTable();
 }
-function toggleFhHelp() {
-  const el=g('fh-help'); if(el) el.style.display=el.style.display==='none'?'block':'none';
+
+// ===== CHART =====
+function initChart() {
+  const ctx=g('donut')?.getContext('2d'); if(!ctx) return;
+  chartInst=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:S.assets.map(a=>a.name),datasets:[{data:[...S.alloc],backgroundColor:S.assets.map((a,i)=>a.color||COLORS[i%COLORS.length]),borderWidth:0,hoverOffset:4}]},
+    options:{responsive:false,cutout:'68%',plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>' '+c.label+': '+c.parsed+'%'},backgroundColor:'#1e293b',bodyColor:'#e2e8f0',borderWidth:0}}}
+  });
 }
+function updateChart() {
+  if(!chartInst) return;
+  chartInst.data.labels=S.assets.map(a=>a.name);
+  chartInst.data.datasets[0].data=S.alloc.slice(0,S.assets.length);
+  chartInst.data.datasets[0].backgroundColor=S.assets.map((a,i)=>a.color||COLORS[i%COLORS.length]);
+  chartInst.update('active');
+}
+function updateLegend() {
+  g('legend').innerHTML=S.assets.map((a,i)=>S.alloc[i]>0?`
+    <div style="display:flex;justify-content:space-between;font-size:12px">
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${a.color||COLORS[i%COLORS.length]};flex-shrink:0;display:inline-block"></span>
+        <span style="color:#94a3b8">${a.name}</span>
+      </div>
+      <span style="font-weight:600">${S.alloc[i]}%</span>
+    </div>`:'').join('');
+}
+
+// ===== DIVIDEND TABLE =====
+function renderDividendTable() {
+  const tbody=g('div-tbody'); if(!tbody) return;
+  let tG=0,tT=0,tN=0;
+  tbody.innerHTML=S.assets.filter((_,i)=>S.alloc[i]>0).map((a,_,arr)=>{
+    const i=S.assets.indexOf(a);
+    const val=S.capital*S.alloc[i]/100;
+    const gM=val*S.yields[i]/100/12;
+    const tM=gM*a.tax/100;
+    const nM=gM-tM;
+    tG+=gM; tT+=tM; tN+=nM;
+    return`<tr style="border-bottom:.5px solid #1e293b">
+      <td style="padding:7px 0;font-weight:600;color:${a.color||COLORS[S.assets.indexOf(a)%COLORS.length]}">${a.name}</td>
+      <td style="text-align:right;padding:7px 0;color:#64748b">${S.alloc[i]}%</td>
+      <td style="text-align:right;padding:7px 0;color:#475569">฿${fmt(val)}</td>
+      <td style="text-align:right;padding:7px 0">฿${fmt(gM)}</td>
+      <td style="text-align:right;padding:7px 0;color:#f59e0b">฿${fmt(tM)}</td>
+      <td style="text-align:right;padding:7px 6px;font-weight:600;color:${nM>0?'#10b981':'#64748b'}">฿${fmt(nM)}</td>
+      <td style="text-align:center;padding:7px 0;font-size:11px;color:#475569">${a.freq||'—'}</td>
+    </tr>`;
+  }).join('');
+  const tf=g('div-tfoot');
+  if(tf) tf.innerHTML=`<tr style="border-top:1px solid #334155;background:#1e293b">
+    <td colspan="3" style="padding:8px 8px;font-weight:600">รวมทั้งหมด</td>
+    <td style="text-align:right;padding:8px 0;font-weight:600">฿${fmt(tG)}</td>
+    <td style="text-align:right;padding:8px 0;font-weight:600;color:#f59e0b">฿${fmt(tT)}</td>
+    <td style="text-align:right;padding:8px 6px;font-weight:700;font-size:15px;color:${tN>=S.target?'#10b981':tN>=S.target*.6?'#f59e0b':'#f87171'}">฿${fmt(tN)}</td>
+    <td></td>
+  </tr>`;
+}
+
+// ===== TAX TABLE =====
+function renderTaxTable() {
+  g('tax-tbody').innerHTML=TAX_INFO.map(t=>`
+    <tr style="border-bottom:1px solid #1e293b">
+      <td style="padding:8px 0;color:${t.color};font-weight:500">${t.name}</td>
+      <td style="padding:8px 0;color:#64748b;font-size:12px">${t.ex}</td>
+      <td style="text-align:right;padding:8px 0;color:#94a3b8">${t.yMax===999?t.yMin+'%+':t.yMin+'–'+t.yMax+'%'}</td>
+      <td style="text-align:right;padding:8px 0"><span class="badge ${t.tax===30?'badge-red':t.tax===15?'badge-yellow':'badge-green'}">${t.tax===0?'0% ✓':t.tax+'%'}</span></td>
+      <td style="text-align:right;padding:8px 0;color:#10b981;font-weight:500">${t.tax===0?t.yMin+'%+':t.yMax===999?'—':(t.yMin*(1-t.tax/100)).toFixed(1)+'–'+(t.yMax*(1-t.tax/100)).toFixed(1)+'%'}</td>
+    </tr>`).join('');
+}
+
+// ===== CAPITAL CALCULATOR =====
+function calcCapNeeded() {
+  const target=parseFloat(g('c-target').value)||10000;
+  const fx=parseFloat(g('c-fx').value)||35;
+  const roi=parseFloat(g('c-roi').value)||0;
+  if(roi<=0){setText('c-cap-thb','—');setText('c-cap-usd','—');return;}
+  const cap=(target*12)/(roi/100);
+  setText('c-cap-thb','฿'+fmt(cap));
+  setText('c-cap-usd','$'+fmt(cap/fx));
+}
+
+function calcTickerHint() {
+  const t=(g('calc-ticker').value||'').toUpperCase().trim();
+  const hint=g('calc-hint');
+  const ph=g('calc-price-hint');
+  if(!t){hint.textContent='';if(ph)ph.textContent='';return;}
+  const info=STOCK_INFO[t];
+  const dps=DPS_TABLE[t];
+  if(info){
+    hint.textContent=info.name+(dps!==undefined?' · DPS $'+dps+'/ปี':'');
+    g('calc-dps').value=dps||0;
+    g('calc-tax').value=info.tax;
+  } else { hint.textContent=''; }
+  // auto-fetch price if key already saved and price field is empty
+  const key=localStorage.getItem('fh_key');
+  if(key && !g('calc-price').value) {
+    fetchCalcPrice();
+  } else if(!key && ph) {
+    ph.style.color='#475569';
+    ph.textContent='ใส่ Finnhub API Key ด้านบนแล้วกด 📡 เพื่อดึงราคา';
+  }
+  calcUpdate();
+}
+
+async function fetchCalcPrice() {
+  const t=(g('calc-ticker').value||'').toUpperCase().trim();
+  const ph=g('calc-price-hint');
+  const btn=g('calc-price-btn');
+  if(!t){if(ph){ph.style.color='#f59e0b';ph.textContent='กรุณาพิมพ์ Ticker ก่อน';}return;}
+  const key=(g('fh-key').value||'').trim()||localStorage.getItem('fh_key')||'';
+  if(!key){
+    if(ph){ph.style.color='#f87171';ph.textContent='ไม่พบ Finnhub Key — ใส่ในแถบ Live Price ด้านบน';}
+    return;
+  }
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(ph){ph.style.color='#475569';ph.textContent='กำลังดึงราคา...';}
+  try {
+    const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${t}&token=${key}`);
+    const d=await r.json();
+    if(d.c>0){
+      g('calc-price').value=d.c.toFixed(2);
+      if(ph){ph.style.color='#10b981';ph.textContent=`$${d.c.toFixed(2)} (${d.dp>=0?'+':''}${d.dp?.toFixed(2)||0}% วันนี้)`;}
+      calcUpdate();
+    } else {
+      if(ph){ph.style.color='#f87171';ph.textContent='ไม่พบราคา — ตรวจสอบ Ticker อีกครั้ง';}
+    }
+  } catch(e) {
+    if(ph){ph.style.color='#f87171';ph.textContent='Error: '+e.message;}
+  } finally {
+    if(btn){btn.textContent='📡';btn.disabled=false;}
+  }
+}
+function calcUpdate() {
+  const price=parseFloat(g('calc-price').value)||0;
+  const dps=parseFloat(g('calc-dps').value)||0;
+  const tax=parseInt(g('calc-tax').value)||15;
+  const prev=g('calc-preview');
+  if(price>0&&dps>=0){
+    const gross=dps/price*100;
+    const netY=gross*(1-tax/100);
+    prev.style.display='block';
+    setText('cp-gross-yield',fmtD(gross)+'%');
+    setText('cp-tax',tax+'%');
+    setText('cp-net-yield',fmtD(netY)+'%');
+  } else { prev.style.display='none'; }
+}
+function addToCalcTable() {
+  const ticker=(g('calc-ticker').value||'').trim().toUpperCase();
+  const price=parseFloat(g('calc-price').value)||0;
+  const dps=parseFloat(g('calc-dps').value)||0;
+  const tax=parseInt(g('calc-tax').value)||15;
+  const fx=parseFloat(g('c-fx').value)||35;
+  const target=parseFloat(g('c-target').value)||10000;
+  if(!ticker||price<=0) return;
+  const gross=dps/price*100;
+  const netY=gross*(1-tax/100);
+  const capNeeded=netY>0?(target*12)/(netY/100):Infinity;
+  calcRows.push({ticker,price,dps,tax,gross,netY,capNeeded,fx});
+  renderCalcTable();
+  g('calc-ticker').value=''; g('calc-price').value=''; g('calc-dps').value='';
+  g('calc-preview').style.display='none'; g('calc-hint').textContent='';
+}
+function removeCalcRow(i) { calcRows.splice(i,1); renderCalcTable(); }
+function clearCalcTable() { calcRows=[]; renderCalcTable(); }
+function renderCalcTable() {
+  const fx=parseFloat(g('c-fx').value)||35;
+  const target=parseFloat(g('c-target').value)||10000;
+  const tbody=g('calc-tbody');
+  if(!calcRows.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:#475569;font-size:13px">เพิ่มหุ้นจากฝั่งซ้ายเพื่อเปรียบเทียบ</td></tr>';
+    return;
+  }
+  tbody.innerHTML=calcRows.map((r,i)=>{
+    const cap=r.netY>0?(target*12)/(r.netY/100):Infinity;
+    return`<tr style="border-bottom:.5px solid #1e293b">
+      <td style="padding:7px 0;font-weight:600;color:#6366f1">${r.ticker}</td>
+      <td style="text-align:right;padding:7px 0">$${fmtD(r.price)}</td>
+      <td style="text-align:right;padding:7px 0;color:#64748b">$${fmtD(r.dps)}</td>
+      <td style="text-align:right;padding:7px 0">${fmtD(r.gross)}%</td>
+      <td style="text-align:right;padding:7px 0;color:#f59e0b">${r.tax}%</td>
+      <td style="text-align:right;padding:7px 0;font-weight:600;color:#10b981">${fmtD(r.netY)}%</td>
+      <td style="text-align:right;padding:7px 0;color:#38bdf8;font-weight:600">${isFinite(cap)?'฿'+fmt(cap):'—'}</td>
+      <td style="padding:7px 0;text-align:center"><button onclick="removeCalcRow(${i})" style="background:none;border:none;color:#334155;cursor:pointer;font-size:12px" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#334155'">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== REFERENCE TABLE =====
+const REF_DEFAULT = [
+  {t:'QQQI', n:'NEOS NASDAQ-100 High Income ETF',   tax:30, freq:'รายเดือน'},
+  {t:'JEPI', n:'JPMorgan Equity Premium Income',     tax:30, freq:'รายเดือน'},
+  {t:'JEPQ', n:'JPMorgan NASDAQ Equity Premium',    tax:30, freq:'รายเดือน'},
+  {t:'QYLD', n:'Global X NASDAQ Covered Call',      tax:30, freq:'รายเดือน'},
+  {t:'SCHD', n:'Schwab US Dividend Equity ETF',     tax:15, freq:'รายไตรมาส'},
+  {t:'VYM',  n:'Vanguard High Dividend Yield',      tax:15, freq:'รายไตรมาส'},
+  {t:'VIG',  n:'Vanguard Dividend Appreciation',    tax:15, freq:'รายไตรมาส'},
+  {t:'VNQ',  n:'Vanguard Real Estate ETF',          tax:30, freq:'รายไตรมาส'},
+  {t:'O',    n:'Realty Income Corp',                tax:30, freq:'รายเดือน'},
+  {t:'STAG', n:'STAG Industrial REIT',              tax:30, freq:'รายเดือน'},
+  {t:'VOO',  n:'Vanguard S&P 500 ETF',             tax:15, freq:'รายไตรมาส'},
+  {t:'QQQ',  n:'Invesco QQQ Trust',                tax:15, freq:'รายไตรมาส'},
+  {t:'KO',   n:'Coca-Cola Company',                tax:15, freq:'รายไตรมาส'},
+  {t:'JNJ',  n:'Johnson & Johnson',                tax:15, freq:'รายไตรมาส'},
+  {t:'MSFT', n:'Microsoft Corporation',            tax:15, freq:'รายไตรมาส'},
+  {t:'AAPL', n:'Apple Inc.',                       tax:15, freq:'รายไตรมาส'},
+  {t:'NVDA', n:'NVIDIA Corporation',               tax:15, freq:'รายไตรมาส'},
+  {t:'MU',   n:'Micron Technology',                tax:15, freq:'รายไตรมาส'},
+  {t:'GOOGL',n:'Alphabet Inc.',                    tax:15, freq:'รายไตรมาส'},
+  {t:'XOM',  n:'ExxonMobil Corporation',           tax:15, freq:'รายไตรมาส'},
+  {t:'T',    n:'AT&T Inc.',                        tax:15, freq:'รายไตรมาส'},
+  {t:'IBM',  n:'IBM Corporation',                  tax:15, freq:'รายไตรมาส'},
+];
+let refRows = JSON.parse(localStorage.getItem('ref_rows') || 'null') || JSON.parse(JSON.stringify(REF_DEFAULT));
+let refSortKey='ticker', refSortAsc=true;
+
+function saveRefRows() { localStorage.setItem('ref_rows', JSON.stringify(refRows)); }
+
+function addRefRow() {
+  const t=(g('ref-new-ticker').value||'').trim().toUpperCase();
+  const n=(g('ref-new-name').value||'').trim()||(STOCK_INFO[t]?.name||'');
+  const dps=parseFloat(g('ref-new-dps').value)||0;
+  const tax=parseInt(g('ref-new-tax').value)||15;
+  const freq=g('ref-new-freq').value||'รายไตรมาส';
+  if(!t) return;
+  if(dps>0 && DPS_TABLE[t]===undefined) DPS_TABLE[t]=dps;
+  refRows.push({t,n,dps,tax,freq,custom:true});
+  saveRefRows();
+  g('ref-add-form').style.display='none';
+  g('ref-new-ticker').value=''; g('ref-new-name').value=''; g('ref-new-dps').value='';
+  renderRefTable();
+}
+
+function removeRefRow(i) { refRows.splice(i,1); saveRefRows(); renderRefTable(); }
+
+function sortRef(key) {
+  if(refSortKey===key) refSortAsc=!refSortAsc; else{refSortKey=key;refSortAsc=true;}
+  renderRefTable();
+}
+
+function renderRefTable() {
+  const q=(g('ref-search')?.value||'').toLowerCase().trim();
+  let rows=refRows.map((r,i)=>({...r,_i:i,_dps:r.dps!=null?r.dps:(DPS_TABLE[r.t]||0)}));
+  if(q) rows=rows.filter(r=>r.t.toLowerCase().includes(q)||r.n.toLowerCase().includes(q));
+  if(refSortKey==='ticker') rows.sort((a,b)=>refSortAsc?a.t.localeCompare(b.t):b.t.localeCompare(a.t));
+  if(refSortKey==='dps') rows.sort((a,b)=>refSortAsc?a._dps-b._dps:b._dps-a._dps);
+  const tbody=g('ref-tbody'), empty=g('ref-empty');
+  if(!rows.length){tbody.innerHTML='';if(empty)empty.style.display='block';}
+  else{
+    if(empty)empty.style.display='none';
+    tbody.innerHTML=rows.map(r=>`
+      <tr style="border-bottom:.5px solid #1e293b" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background=''">
+        <td style="padding:7px 0;font-weight:600;color:#6366f1">${r.t}${r.custom?'<span style="font-size:9px;color:#475569;margin-left:3px">●</span>':''}</td>
+        <td style="padding:7px 0;color:#64748b;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}</td>
+        <td style="text-align:right;padding:7px 0;font-weight:500">$${r._dps.toFixed?r._dps.toFixed(2):r._dps}</td>
+        <td style="text-align:right;padding:7px 0"><span class="badge ${r.tax===30?'badge-red':'badge-yellow'}" style="font-size:10px">${r.tax}%</span></td>
+        <td style="text-align:center;padding:7px 0;font-size:11px;color:#64748b">${r.freq}</td>
+        <td style="padding:7px 0;text-align:right;white-space:nowrap">
+          <button onclick="fillCalcFromRef('${r.t}')" style="background:#1e293b;border:1px solid #334155;color:#818cf8;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px">เลือก</button>
+          <button onclick="removeRefRow(${r._i})" style="background:none;border:none;color:#334155;cursor:pointer;font-size:13px;padding:0 2px" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#334155'">✕</button>
+        </td>
+      </tr>`).join('');
+  }
+  const cnt=g('ref-count'); if(cnt) cnt.textContent=`แสดง ${rows.length} / ${refRows.length} รายการ`;
+}
+
+function fillCalcFromRef(ticker) {
+  g('calc-ticker').value=ticker;
+  calcTickerHint();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ===== FINNHUB =====
 async function fetchFinnhub() {
   const key=(g('fh-key').value||'').trim();
-  if(!key){alert('กรุณาใส่ Finnhub API Key ก่อน');return;}
+  if(!key){alert('กรุณาใส่ Finnhub API Key ก่อน\nรับฟรีที่ finnhub.io');return;}
   localStorage.setItem('fh_key',key);
   const btn=g('fh-btn'); btn.textContent='กำลังโหลด...'; btn.disabled=true;
   const tickers=[...new Set(S.assets.map(a=>a.name))];
@@ -814,219 +1236,44 @@ async function fetchFinnhub() {
       if(d.c>0) priceMap[t]={price:d.c,change:d.dp??0};
     }
     if(Object.keys(priceMap).length){
-      // Update yields from DPS/Price
       S.assets.forEach((a,i)=>{
         const pd=priceMap[a.name];
-        if(pd && DPS_TABLE[a.name]!==undefined){
-          const dps=DPS_TABLE[a.name];
-          const newYield=pd.price>0 ? +(dps/pd.price*100).toFixed(2) : S.yields[i];
+        if(pd&&DPS_TABLE[a.name]!==undefined){
+          const newYield=pd.price>0?+(DPS_TABLE[a.name]/pd.price*100).toFixed(2):S.yields[i];
           S.yields[i]=newYield;
           const el=g('yl-'+i); if(el) el.value=newYield;
         }
       });
       update();
-      // Show price badges
-      g('fh-badge').style.display='inline';
-      const pricesEl=g('fh-prices');
-      pricesEl.style.display='grid';
-      pricesEl.style.gridTemplateColumns='repeat(auto-fit,minmax(110px,1fr))';
-      pricesEl.style.gap='6px';
-      pricesEl.style.marginTop='.75rem';
-      pricesEl.innerHTML=Object.entries(priceMap).map(([t,v])=>`
+      g('fh-badge').style.display='inline-flex';
+      const grid=g('fh-price-grid');
+      grid.style.display='grid';
+      grid.innerHTML=Object.entries(priceMap).map(([t,v])=>`
         <div style="background:#1e293b;border-radius:8px;padding:.5rem .75rem;text-align:center">
           <div style="font-size:11px;color:#64748b;margin-bottom:1px">${t}</div>
-          <div style="font-weight:700;font-size:15px">$${v.price.toFixed(2)}</div>
-          <div style="font-size:11px;color:${v.change>=0?'#10b981':'#f87171'}">${v.change>=0?'+':''}${v.change.toFixed(2)}%</div>
-          ${DPS_TABLE[t]!==undefined?`<div style="font-size:10px;color:#475569">yield ${v.price>0?(DPS_TABLE[t]/v.price*100).toFixed(1):0}%</div>`:''}
+          <div style="font-weight:700;font-size:14px">$${v.price.toFixed(2)}</div>
+          <div style="font-size:10px;color:${v.change>=0?'#10b981':'#f87171'}">${v.change>=0?'+':''}${v.change.toFixed(2)}%</div>
+          ${DPS_TABLE[t]!==undefined&&v.price>0?`<div style="font-size:10px;color:#475569">${(DPS_TABLE[t]/v.price*100).toFixed(1)}% yield</div>`:''}
         </div>`).join('');
       const now=new Date().toLocaleTimeString('th-TH');
-      const upd=g('fh-updated'); if(upd) upd.textContent='อัปเดตล่าสุด: '+now;
+      setText('fh-updated','อัปเดต: '+now);
     }
-  } catch(e){ const upd=g('fh-updated'); if(upd) upd.textContent='Error: '+e.message; }
-  finally{ btn.textContent='ดึงราคา'; btn.disabled=false; }
+  } catch(e){setText('fh-updated','Error: '+e.message);}
+  finally{btn.textContent='ดึงราคา';btn.disabled=false;}
 }
 function toggleAutoRefresh() {
   const btn=g('fh-auto-btn');
   if(fhInterval){
-    clearInterval(fhInterval); fhInterval=null;
-    btn.style.background='#1e293b'; btn.style.color='#64748b'; btn.style.borderColor='#334155';
-    btn.textContent='⏱ Auto';
+    clearInterval(fhInterval);fhInterval=null;
+    btn.className='btn btn-ghost'; btn.style.padding='5px 10px'; btn.style.fontSize='12px';
+    btn.textContent='⏱ Auto 5m';
   } else {
     fetchFinnhub();
     fhInterval=setInterval(fetchFinnhub,5*60*1000);
     btn.style.background='#052e16'; btn.style.color='#34d399'; btn.style.borderColor='#166534';
-    btn.textContent='⏱ Auto ON (5m)';
+    btn.textContent='⏱ Auto ON';
   }
 }
-function updateRow(i) {
-  const v=S.alloc[i];
-  const sl=g('sl-'+i); if(sl) sl.value=v;
-  const ap=g('ap-'+i); if(ap) ap.textContent=v+'%';
-  const av=g('av-'+i); if(av) av.textContent='฿'+fmt(S.capital*v/100);
-}
-function onSlide(ci, nv) {
-  const ov=S.alloc[ci]; if(nv===ov) return;
-  S.alloc[ci]=nv;
-  const n=S.assets.length;
-  const others=[...Array(n).keys()].filter(i=>i!==ci);
-  const sumO=others.reduce((s,i)=>s+S.alloc[i],0);
-  const rem=100-nv;
-  if(rem<0){S.alloc[ci]=100;others.forEach(i=>S.alloc[i]=0);}
-  else if(sumO>0){
-    others.forEach(i=>{S.alloc[i]=Math.round(S.alloc[i]/sumO*rem);});
-    const tot=S.alloc.slice(0,n).reduce((s,v)=>s+v,0);
-    const diff=100-tot;
-    if(diff!==0){const big=others.reduce((a,b)=>S.alloc[a]>=S.alloc[b]?a:b);S.alloc[big]=Math.max(0,S.alloc[big]+diff);}
-  }
-  [...Array(n).keys()].forEach(i=>updateRow(i));
-  const tot=S.alloc.slice(0,n).reduce((s,v)=>s+v,0);
-  const tp=g('total-pct'); tp.textContent=tot+'%'; tp.style.color=tot===100?'#6366f1':'#f59e0b';
-  S.preset=-1; renderPresets(); update();
-}
-function onYield(i,v){S.yields[i]=v;update();}
-
-// ===== CALC =====
-function calcMetrics() {
-  let gross=0,tax=0;
-  S.assets.forEach((a,i)=>{
-    const val=S.capital*S.alloc[i]/100;
-    const g=val*S.yields[i]/100;
-    tax+=g*a.tax/100; gross+=g;
-  });
-  const net=gross-tax, mo=net/12, roi=net/S.capital*100;
-  const needCap=roi>0?(TGT*12)/(roi/100):Infinity;
-  return{gross,tax,net,mo,roi,needCap};
-}
-function update() {
-  const m=calcMetrics();
-  const fx=+g('fx-rate').value||35;
-  setText('fx-usd','$'+fmt(S.capital/fx));
-  setText('m-gross','฿'+fmt(m.gross));
-  setText('m-tax','฿'+fmt(m.tax));
-  setText('m-net-yr','฿'+fmt(m.net));
-  const moEl=g('m-net-mo'); moEl.textContent='฿'+fmt(m.mo);
-  moEl.style.color=m.mo>=TGT?'#10b981':m.mo>=TGT*.7?'#f59e0b':'#f87171';
-  const pct=Math.min(100,m.mo/TGT*100);
-  g('gap-bar').style.width=pct+'%';
-  g('gap-bar').style.background=pct>=100?'#10b981':pct>=70?'#f59e0b':'#f87171';
-  setText('gap-pct-lbl',Math.round(pct)+'%');
-  setText('gap-actual','฿'+fmt(m.mo)+'/เดือน');
-  const diff=m.mo-TGT; const diffEl=g('gap-diff');
-  if(diff>=0){diffEl.textContent='+฿'+fmt(diff)+' เกิน!';diffEl.style.color='#10b981';}
-  else{diffEl.textContent='-฿'+fmt(Math.abs(diff))+' ขาด';diffEl.style.color='#f87171';}
-  setText('gap-cur-roi',m.roi.toFixed(1)+'%');
-  setText('gap-fx-rate',fx);
-  if(isFinite(m.needCap)){
-    setText('gap-need-cap','฿'+fmt(m.needCap));
-    setText('gap-need-usd','$'+fmt(m.needCap/fx));
-    const add=m.needCap-S.capital; const addEl=g('gap-add-cap');
-    if(add>0){addEl.textContent='+฿'+fmt(add);addEl.style.color='#f59e0b';}
-    else{addEl.textContent='มีพอแล้ว';addEl.style.color='#10b981';}
-  } else {setText('gap-need-cap','N/A');setText('gap-need-usd','N/A');}
-  const al=g('gap-alert');
-  if(m.mo>=TGT){al.textContent='ยินดีด้วย! พอร์ตสร้างรายได้ ฿'+fmt(m.mo)+'/เดือน เกินเป้าหมาย!';al.style.cssText='background:#052e16;border:1px solid #166534;color:#34d399;padding:.75rem 1rem;border-radius:8px;font-size:13px;font-weight:500';}
-  else{al.textContent='ยังขาดเป้า ฿'+fmt(Math.abs(diff))+'/เดือน — ต้องเพิ่มทุนเป็น ฿'+fmt(Math.max(0,m.needCap))+' หรือปรับ strategy ที่ให้ yield สูงขึ้น';al.style.cssText='background:#1c1400;border:1px solid #854d0e;color:#fbbf24;padding:.75rem 1rem;border-radius:8px;font-size:13px;font-weight:500';}
-  updateChart(); updateLegend(); renderDividendTable();
-}
-
-// ===== DIVIDEND TABLE =====
-function renderDividendTable() {
-  const tbody=g('div-tbody'); if(!tbody) return;
-  let totalGross=0, totalTax=0, totalNet=0;
-  tbody.innerHTML = S.assets.map((a,i) => {
-    const val=S.capital*S.alloc[i]/100;
-    const grossMo=val*S.yields[i]/100/12;
-    const taxMo=grossMo*a.tax/100;
-    const netMo=grossMo-taxMo;
-    totalGross+=grossMo; totalTax+=taxMo; totalNet+=netMo;
-    if(S.alloc[i]===0) return '';
-    return `<tr style="border-bottom:0.5px solid #1e293b">
-      <td style="padding:8px 0;font-weight:600;color:${a.color}">${a.name}</td>
-      <td style="text-align:right;padding:8px 0;color:#94a3b8">${S.alloc[i]}%</td>
-      <td style="text-align:right;padding:8px 0;color:#64748b">฿${fmt(val)}</td>
-      <td style="text-align:right;padding:8px 0">฿${fmt(grossMo)}</td>
-      <td style="text-align:right;padding:8px 0;color:#f59e0b">฿${fmt(taxMo)}</td>
-      <td style="text-align:right;padding:8px 6px;font-weight:600;color:${netMo>0?'#10b981':'#64748b'}">฿${fmt(netMo)}</td>
-      <td style="text-align:center;padding:8px 0;font-size:11px;color:#64748b">${a.freq||'รายไตรมาส'}</td>
-    </tr>`;
-  }).join('');
-  const tfoot=g('div-tfoot');
-  if(tfoot) tfoot.innerHTML=`<tr style="border-top:1px solid #334155;background:#1e293b">
-    <td colspan="3" style="padding:8px 8px;font-weight:600">รวมทั้งหมด</td>
-    <td style="text-align:right;padding:8px 0;font-weight:600">฿${fmt(totalGross)}</td>
-    <td style="text-align:right;padding:8px 0;font-weight:600;color:#f59e0b">฿${fmt(totalTax)}</td>
-    <td style="text-align:right;padding:8px 6px;font-weight:700;font-size:15px;color:${totalNet>=TGT?'#10b981':totalNet>=6000?'#f59e0b':'#f87171'}">฿${fmt(totalNet)}</td>
-    <td></td>
-  </tr>`;
-}
-
-// ===== CHART =====
-function initChart() {
-  const ctx=g('donut')?.getContext('2d'); if(!ctx) return;
-  chartInst=new Chart(ctx,{
-    type:'doughnut',
-    data:{labels:S.assets.map(a=>a.name),datasets:[{data:[...S.alloc],backgroundColor:S.assets.map(a=>a.color),borderWidth:0,hoverOffset:4}]},
-    options:{responsive:false,cutout:'65%',plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>' '+c.label+': '+c.parsed+'% (฿'+fmt(S.capital*c.parsed/100)+')'},
-      backgroundColor:'#1e293b',bodyColor:'#e2e8f0',titleColor:'#94a3b8',borderWidth:0}}}
-  });
-}
-function updateChart() {
-  if(!chartInst) return;
-  chartInst.data.labels=S.assets.map(a=>a.name);
-  chartInst.data.datasets[0].data=S.alloc.slice(0,S.assets.length);
-  chartInst.data.datasets[0].backgroundColor=S.assets.map(a=>a.color);
-  chartInst.update('active');
-}
-function updateLegend() {
-  g('legend').innerHTML=S.assets.map((a,i)=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
-      <div style="display:flex;align-items:center;gap:5px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"></span>
-        <span style="color:#94a3b8">${a.name}</span>
-      </div><span style="font-weight:500">${S.alloc[i]}%</span>
-    </div>`).join('');
-}
-
-// ===== TAX TABLE =====
-function renderTaxTable() {
-  g('tax-tbody').innerHTML=TAX_INFO.map(r=>`
-    <tr style="border-bottom:1px solid #1e293b">
-      <td style="padding:8px 0"><span style="width:8px;height:8px;border-radius:50%;background:${r.color};display:inline-block;margin-right:6px"></span>${r.name}</td>
-      <td style="padding:8px 0;color:#64748b">${r.ex}</td>
-      <td style="text-align:right;padding:8px 0;color:#94a3b8">${r.yMin}${r.yMax<999?'–'+r.yMax:'%+'}%</td>
-      <td style="text-align:right;padding:8px 0;color:${r.tax===0?'#10b981':r.tax===30?'#f87171':'#f59e0b'}">${r.tax}%</td>
-      <td style="text-align:right;padding:8px 0;color:#10b981">${r.tax<999&&r.yMax<999?(r.yMin*(1-r.tax/100)).toFixed(1)+'–'+(r.yMax*(1-r.tax/100)).toFixed(1)+'%':'เต็มจำนวน'}</td>
-    </tr>`).join('');
-}
-
-// ===== CAPITAL CALC =====
-function calcCap() {
-  const tgt=+g('c-target').value||10000;
-  const roi=+g('c-roi').value||6;
-  const fx=+g('c-fx').value||35;
-  if(roi<=0) return;
-  const need=tgt*12/(roi/100); const extra=need-CAP_DEFAULT;
-  setText('c-cap-thb','฿'+fmt(need));
-  setText('c-cap-usd','$'+fmt(need/fx));
-  const ex=g('c-extra');
-  if(extra>0){ex.textContent='+฿'+fmt(extra);ex.style.color='#f59e0b';}
-  else{ex.textContent='มีพอแล้ว';ex.style.color='#10b981';}
-  setText('c-ann','฿'+fmt(tgt*12));
-}
-
-// ===== COPY =====
-function copyScript() {
-  navigator.clipboard.writeText(g('script-code').textContent).then(()=>{
-    const btn=g('copy-btn'); btn.textContent='คัดลอกแล้ว ✓'; btn.style.color='#10b981';
-    setTimeout(()=>{btn.textContent='คัดลอก';btn.style.color='';},2000);
-  });
-}
-
-// ===== HELPERS =====
-function fmt(n){return Math.round(n).toLocaleString('th-TH');}
-function setText(id,txt){const el=g(id);if(el)el.textContent=txt;}
-function g(id){return document.getElementById(id);}
 </script>
 </body>
 </html>
