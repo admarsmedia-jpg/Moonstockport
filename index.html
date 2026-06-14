@@ -738,7 +738,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function switchTab(tab, btn) {
-  ['sim','cap','tax'].forEach(t=>g('tab-'+t).classList.toggle('show',t===tab));
+  ['sim','cap','tax','journal'].forEach(t=>g('tab-'+t).classList.toggle('show',t===tab));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
