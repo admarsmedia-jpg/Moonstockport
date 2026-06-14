@@ -74,6 +74,7 @@ select.inp option{background:#1e293b}
     <button class="tab-btn active" onclick="switchTab('sim',this)">📊 Portfolio</button>
     <button class="tab-btn" onclick="switchTab('cap',this)">🧮 คำนวณเงินต้น</button>
     <button class="tab-btn" onclick="switchTab('tax',this)">📋 ภาษี US</button>
+    <button class="tab-btn" onclick="switchTab('journal',this)">📒 บันทึกการซื้อขาย</button>
   </div>
 
   <!-- ========== TAB: PORTFOLIO ========== -->
@@ -529,6 +530,115 @@ select.inp option{background:#1e293b}
       </div>
     </div>
   </div>
+
+  <!-- ===== JOURNAL TAB ===== -->
+  <div id="tab-journal" class="tab-panel">
+
+    <!-- Auth Bar -->
+    <div id="journal-auth" class="card" style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div id="journal-user-info" style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:13px;color:#64748b" id="journal-status">กรุณา Login เพื่อบันทึกข้อมูล</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="btn-login" onclick="fbLogin()" class="btn btn-primary" style="display:flex;align-items:center;gap:6px;font-size:13px">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Login ด้วย Google
+        </button>
+        <button id="btn-logout" onclick="fbLogout()" class="btn btn-ghost" style="display:none;font-size:13px">ออกจากระบบ</button>
+      </div>
+    </div>
+
+    <!-- Content (shown after login) -->
+    <div id="journal-content" style="display:none">
+
+      <!-- Add Trade Form -->
+      <div class="card" style="margin-bottom:1rem">
+        <div style="font-weight:600;font-size:14px;margin-bottom:1rem">➕ บันทึกรายการใหม่</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:.75rem">
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">วันที่</div>
+            <input id="j-date" type="date" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">Ticker</div>
+            <input id="j-ticker" type="text" placeholder="QQQI" class="inp" style="font-size:12px;padding:5px 8px;text-transform:uppercase">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">ประเภท</div>
+            <select id="j-type" class="inp" style="font-size:12px;padding:5px 8px">
+              <option value="buy">🟢 ซื้อ (Buy)</option>
+              <option value="sell">🔴 ขาย (Sell)</option>
+              <option value="dividend">💰 ปันผล (Dividend)</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">จำนวนหุ้น</div>
+            <input id="j-qty" type="number" placeholder="0" min="0" step="0.0001" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">ราคา/หุ้น ($)</div>
+            <input id="j-price" type="number" placeholder="0.00" min="0" step="0.01" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">ค่าธรรมเนียม ($)</div>
+            <input id="j-fee" type="number" placeholder="0.00" min="0" step="0.01" value="0" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">USD/THB</div>
+            <input id="j-fx" type="number" placeholder="35" value="35" min="1" step="0.01" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:3px">หมายเหตุ</div>
+            <input id="j-note" type="text" placeholder="ไม่บังคับ" class="inp" style="font-size:12px;padding:5px 8px">
+          </div>
+        </div>
+        <!-- Preview -->
+        <div id="j-preview" style="background:#1e293b;border-radius:8px;padding:.625rem .875rem;margin-bottom:.75rem;font-size:12px;color:#94a3b8;display:none"></div>
+        <button onclick="addTrade()" class="btn btn-primary" style="width:100%;font-size:13px;padding:8px">💾 บันทึกรายการ</button>
+      </div>
+
+      <!-- Summary Cards -->
+      <div id="j-summary" style="margin-bottom:1rem"></div>
+
+      <!-- History Table -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem;flex-wrap:wrap;gap:8px">
+          <div style="font-weight:600;font-size:14px">ประวัติการซื้อขาย</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <input id="j-search" type="text" placeholder="🔍 ค้นหา Ticker..." class="inp" style="font-size:12px;padding:4px 8px;width:160px" oninput="renderJournal()">
+            <select id="j-filter-type" class="inp" style="font-size:12px;padding:4px 8px;width:130px" onchange="renderJournal()">
+              <option value="">ทุกประเภท</option>
+              <option value="buy">ซื้อ</option>
+              <option value="sell">ขาย</option>
+              <option value="dividend">ปันผล</option>
+            </select>
+            <button onclick="exportCSV()" class="btn btn-ghost" style="font-size:11px;padding:4px 10px">⬇ CSV</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="color:#64748b;border-bottom:1px solid #1e293b">
+              <th style="text-align:left;padding:6px 4px;font-weight:500;cursor:pointer" onclick="sortJournal('date')">วันที่ ↕</th>
+              <th style="text-align:left;padding:6px 4px;font-weight:500">Ticker</th>
+              <th style="text-align:center;padding:6px 4px;font-weight:500">ประเภท</th>
+              <th style="text-align:right;padding:6px 4px;font-weight:500">จำนวน</th>
+              <th style="text-align:right;padding:6px 4px;font-weight:500">ราคา $</th>
+              <th style="text-align:right;padding:6px 4px;font-weight:500">มูลค่า $</th>
+              <th style="text-align:right;padding:6px 4px;font-weight:500">มูลค่า ฿</th>
+              <th style="text-align:right;padding:6px 4px;font-weight:500">ค่าธ. $</th>
+              <th style="text-align:left;padding:6px 4px;font-weight:500">หมายเหตุ</th>
+              <th style="padding:6px 4px"></th>
+            </tr></thead>
+            <tbody id="j-tbody">
+              <tr><td colspan="10" style="text-align:center;padding:2rem;color:#475569">ยังไม่มีรายการ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:.5rem;font-size:11px;color:#334155" id="j-count"></div>
+      </div>
+
+    </div><!-- /journal-content -->
+  </div><!-- /tab-journal -->
 
 </main>
 
@@ -1274,6 +1384,242 @@ function toggleAutoRefresh() {
     btn.textContent='⏱ Auto ON';
   }
 }
+</script>
+
+<!-- ===== FIREBASE ===== -->
+<script type="module">
+import { initializeApp }           from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot,
+         query, orderBy, serverTimestamp }
+                                   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBb25fmT3ePh6Z5VdzZk56a2Cq7kH4fT-w",
+  authDomain: "moon-stock-portfolio.firebaseapp.com",
+  projectId: "moon-stock-portfolio",
+  storageBucket: "moon-stock-portfolio.firebasestorage.app",
+  messagingSenderId: "221281684378",
+  appId: "1:221281684378:web:34121c732babbc1c498823"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+let currentUser = null;
+let trades = [];
+let jSortKey = 'date', jSortAsc = false;
+let unsubscribeTrades = null;
+
+// ── Auth state ──────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  const loginBtn  = document.getElementById('btn-login');
+  const logoutBtn = document.getElementById('btn-logout');
+  const statusEl  = document.getElementById('journal-status');
+  const content   = document.getElementById('journal-content');
+
+  if (user) {
+    loginBtn.style.display  = 'none';
+    logoutBtn.style.display = '';
+    statusEl.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:6px">
+      <strong style="color:#f1f5f9">${user.displayName}</strong>
+      <span style="color:#475569;font-size:11px;margin-left:6px">${user.email}</span>`;
+    content.style.display = 'block';
+    subscribeToTrades(user.uid);
+    // set today's date default
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('j-date').value) document.getElementById('j-date').value = today;
+    // sync FX from main
+    const mainFx = document.getElementById('fx-rate')?.value;
+    if (mainFx) document.getElementById('j-fx').value = mainFx;
+  } else {
+    loginBtn.style.display  = '';
+    logoutBtn.style.display = 'none';
+    statusEl.textContent = 'กรุณา Login เพื่อบันทึกข้อมูล';
+    content.style.display = 'none';
+    if (unsubscribeTrades) { unsubscribeTrades(); unsubscribeTrades = null; }
+    trades = [];
+  }
+});
+
+// ── Firestore realtime listener ─────────────────────────────
+function subscribeToTrades(uid) {
+  if (unsubscribeTrades) unsubscribeTrades();
+  const q = query(collection(db, 'users', uid, 'trades'), orderBy('date', 'desc'));
+  unsubscribeTrades = onSnapshot(q, snap => {
+    trades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderJournal();
+    renderSummary();
+  });
+}
+
+// ── Add trade ───────────────────────────────────────────────
+window.addTrade = async function() {
+  if (!currentUser) { alert('กรุณา Login ก่อน'); return; }
+  const ticker = (document.getElementById('j-ticker').value || '').trim().toUpperCase();
+  const type   = document.getElementById('j-type').value;
+  const qty    = parseFloat(document.getElementById('j-qty').value) || 0;
+  const price  = parseFloat(document.getElementById('j-price').value) || 0;
+  const fee    = parseFloat(document.getElementById('j-fee').value) || 0;
+  const fx     = parseFloat(document.getElementById('j-fx').value) || 35;
+  const date   = document.getElementById('j-date').value;
+  const note   = document.getElementById('j-note').value.trim();
+  if (!ticker || !date || (type !== 'dividend' && qty <= 0)) {
+    alert('กรุณากรอก Ticker, วันที่ และจำนวนหุ้น'); return;
+  }
+  const total = qty * price;
+  await addDoc(collection(db, 'users', currentUser.uid, 'trades'), {
+    ticker, type, qty, price, fee, fx, date, note, total,
+    totalThb: total * fx,
+    createdAt: serverTimestamp()
+  });
+  // clear form
+  ['j-ticker','j-qty','j-price','j-note'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('j-fee').value = '0';
+  document.getElementById('j-preview').style.display = 'none';
+};
+
+// ── Delete trade ────────────────────────────────────────────
+window.deleteTrade = async function(id) {
+  if (!currentUser || !confirm('ลบรายการนี้?')) return;
+  await deleteDoc(doc(db, 'users', currentUser.uid, 'trades', id));
+};
+
+// ── Auth actions ────────────────────────────────────────────
+window.fbLogin  = () => signInWithPopup(auth, provider).catch(e => alert('Login error: ' + e.message));
+window.fbLogout = () => signOut(auth);
+
+// ── Sort ────────────────────────────────────────────────────
+window.sortJournal = function(key) {
+  if (jSortKey === key) jSortAsc = !jSortAsc; else { jSortKey = key; jSortAsc = false; }
+  renderJournal();
+};
+
+// ── Render table ────────────────────────────────────────────
+window.renderJournal = function() {
+  const q    = (document.getElementById('j-search')?.value || '').toLowerCase();
+  const ft   = document.getElementById('j-filter-type')?.value || '';
+  const fmt2 = n => isFinite(n) ? (+n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+  const fmtI = n => isFinite(n) ? Math.round(n).toLocaleString() : '—';
+  const typeLabel = { buy:'🟢 ซื้อ', sell:'🔴 ขาย', dividend:'💰 ปันผล' };
+  const typeColor = { buy:'#10b981', sell:'#f87171', dividend:'#fbbf24' };
+
+  let rows = [...trades];
+  if (q)  rows = rows.filter(r => r.ticker?.toLowerCase().includes(q));
+  if (ft) rows = rows.filter(r => r.type === ft);
+  rows.sort((a,b) => {
+    let va = a[jSortKey] ?? '', vb = b[jSortKey] ?? '';
+    return jSortAsc ? (va>vb?1:va<vb?-1:0) : (va<vb?1:va>vb?-1:0);
+  });
+
+  const tbody = document.getElementById('j-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:#475569">ไม่พบรายการ</td></tr>';
+  } else {
+    tbody.innerHTML = rows.map(r => `
+      <tr style="border-bottom:.5px solid #1e293b" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background=''">
+        <td style="padding:7px 4px;color:#64748b;white-space:nowrap">${r.date||'—'}</td>
+        <td style="padding:7px 4px;font-weight:600;color:#6366f1">${r.ticker||'—'}</td>
+        <td style="padding:7px 4px;text-align:center">
+          <span style="font-size:11px;font-weight:600;color:${typeColor[r.type]||'#94a3b8'}">${typeLabel[r.type]||r.type}</span>
+        </td>
+        <td style="text-align:right;padding:7px 4px">${fmt2(r.qty)}</td>
+        <td style="text-align:right;padding:7px 4px">$${fmt2(r.price)}</td>
+        <td style="text-align:right;padding:7px 4px;color:#94a3b8">$${fmt2(r.total)}</td>
+        <td style="text-align:right;padding:7px 4px;color:#38bdf8">฿${fmtI(r.totalThb)}</td>
+        <td style="text-align:right;padding:7px 4px;color:#475569">$${fmt2(r.fee)}</td>
+        <td style="padding:7px 4px;color:#475569;font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.note||''}</td>
+        <td style="padding:7px 4px;text-align:right">
+          <button onclick="deleteTrade('${r.id}')" style="background:none;border:none;color:#334155;cursor:pointer;font-size:13px;padding:0 3px"
+            onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#334155'">✕</button>
+        </td>
+      </tr>`).join('');
+  }
+  const cnt = document.getElementById('j-count');
+  if (cnt) cnt.textContent = `${rows.length} รายการ (จาก ${trades.length} ทั้งหมด)`;
+};
+
+// ── Summary (avg cost per ticker) ──────────────────────────
+function renderSummary() {
+  const map = {};
+  trades.forEach(t => {
+    if (!map[t.ticker]) map[t.ticker] = { buyQty:0, buyCost:0, sellQty:0, sellRevenue:0, dividends:0 };
+    const m = map[t.ticker];
+    if (t.type === 'buy')      { m.buyQty += t.qty; m.buyCost += (t.total||0) + (t.fee||0); }
+    if (t.type === 'sell')     { m.sellQty += t.qty; m.sellRevenue += (t.total||0) - (t.fee||0); }
+    if (t.type === 'dividend') { m.dividends += t.total||0; }
+  });
+  const tickers = Object.keys(map);
+  if (!tickers.length) { document.getElementById('j-summary').innerHTML=''; return; }
+  document.getElementById('j-summary').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:1rem">
+      ${tickers.map(tk => {
+        const m = map[tk];
+        const avgCost = m.buyQty > 0 ? m.buyCost / m.buyQty : 0;
+        const holdQty = m.buyQty - m.sellQty;
+        return `<div class="card" style="padding:.875rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+            <span style="font-weight:700;font-size:14px;color:#6366f1">${tk}</span>
+            <span style="font-size:11px;color:#64748b">ถือ ${holdQty.toFixed(4)} หุ้น</span>
+          </div>
+          <div class="grid2" style="gap:6px">
+            <div>
+              <div style="font-size:10px;color:#475569">Avg Cost</div>
+              <div style="font-size:13px;font-weight:600">$${avgCost.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#475569">ปันผลสะสม</div>
+              <div style="font-size:13px;font-weight:600;color:#fbbf24">$${m.dividends.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#475569">ลงทุนทั้งหมด</div>
+              <div style="font-size:12px;color:#94a3b8">$${m.buyCost.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#475569">ขายไปแล้ว</div>
+              <div style="font-size:12px;color:#94a3b8">$${m.sellRevenue.toFixed(2)}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── Export CSV ──────────────────────────────────────────────
+window.exportCSV = function() {
+  const header = 'วันที่,Ticker,ประเภท,จำนวน,ราคา($),มูลค่า($),มูลค่า(฿),ค่าธรรมเนียม($),หมายเหตุ';
+  const rows = trades.map(r =>
+    [r.date, r.ticker, r.type, r.qty, r.price, r.total, r.totalThb, r.fee, `"${r.note||''}"`].join(',')
+  );
+  const csv = '﻿' + [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='moon-stock-trades.csv'; a.click();
+  URL.revokeObjectURL(url);
+};
+
+// ── Preview while filling form ──────────────────────────────
+['j-ticker','j-type','j-qty','j-price','j-fee','j-fx'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const ticker = (document.getElementById('j-ticker').value||'').toUpperCase();
+    const type   = document.getElementById('j-type').value;
+    const qty    = parseFloat(document.getElementById('j-qty').value)||0;
+    const price  = parseFloat(document.getElementById('j-price').value)||0;
+    const fee    = parseFloat(document.getElementById('j-fee').value)||0;
+    const fx     = parseFloat(document.getElementById('j-fx').value)||35;
+    const prev   = document.getElementById('j-preview');
+    if (ticker && qty > 0 && price > 0) {
+      const total = qty * price;
+      const typeLabel = { buy:'ซื้อ', sell:'ขาย', dividend:'ปันผล' };
+      prev.style.display = 'block';
+      prev.textContent = `${typeLabel[type]||type} ${ticker} ${qty} หุ้น @ $${price} = $${total.toFixed(2)} (฿${Math.round(total*fx).toLocaleString()}) + ค่าธ. $${fee}`;
+    } else { prev.style.display = 'none'; }
+  });
+});
 </script>
 </body>
 </html>
